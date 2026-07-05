@@ -1,0 +1,135 @@
+{
+ "name": "Chapter 4 - Bird 1",
+ "stacks": [
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": -115,
+    "y": 16,
+    "hat": true
+   },
+   {
+    "opcode": "flipperdisplay_ultrasonicLightUp",
+    "depth": 0,
+    "text": "light up distance sensor B [100 100 100 100]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippermove_movementSpeed",
+    "depth": 0,
+    "text": "set movement speed to 15 %",
+    "kind": "move"
+   },
+   {
+    "opcode": "flippermotor_motorSetSpeed",
+    "depth": 0,
+    "text": "set motor F speed to 10 %",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 0,
+    "text": "motor C go shortest to position 0",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 0,
+    "text": "motor D go shortest to position 0",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 0,
+    "text": "motor F go shortest to position 0",
+    "kind": "motor"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenDistance",
+    "depth": 0,
+    "text": "when B closer than 5 inches",
+    "kind": "event",
+    "x": 371,
+    "y": 37,
+    "hat": true
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "control_repeat_until",
+    "depth": 0,
+    "text": "repeat until flippermoremotor_power = 0",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperdisplay_ultrasonicLightUp",
+    "depth": 1,
+    "text": "light up distance sensor B [100 100 100 100]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 1,
+    "text": "motor F go shortest to position 330",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 1,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 1,
+    "text": "motor F go shortest to position 30",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flipperdisplay_ultrasonicLightUp",
+    "depth": 1,
+    "text": "light up distance sensor B [0 0 0 0]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 1,
+    "text": "wait .25 seconds",
+    "kind": "control"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenDistance",
+    "depth": 0,
+    "text": "when B closer than 5 inches",
+    "kind": "event",
+    "x": -115,
+    "y": 508,
+    "hat": true
+   },
+   {
+    "opcode": "flippermove_setMovementPair",
+    "depth": 0,
+    "text": "set movement motors to CD",
+    "kind": "move"
+   },
+   {
+    "opcode": "flippermove_move",
+    "depth": 0,
+    "text": "move forward for 5 rotations",
+    "kind": "move"
+   }
+  ]
+ ]
+}

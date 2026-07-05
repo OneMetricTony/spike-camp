@@ -1,0 +1,15 @@
+{
+ "name": "Line Follower (bang-bang demo)",
+ "stacks": [
+  [
+   {"opcode": "flipperevents_whenProgramStarts", "depth": 0, "text": "when program starts", "kind": "event", "hat": true, "x": 0, "y": 0, "label": "Line Follower"},
+   {"opcode": "flippermove_setMovementPair", "depth": 0, "text": "set movement motors to CD", "kind": "move"},
+   {"opcode": "flippermove_movementSpeed", "depth": 0, "text": "set movement speed to 30 %", "kind": "move"},
+   {"opcode": "control_forever", "depth": 0, "text": "forever", "kind": "control", "container": true},
+   {"opcode": "control_if_else", "depth": 1, "text": "if A is color black then", "kind": "control", "container": true, "cond": {"join": "single", "terms": [{"type": "is_color", "port": "A", "color": "black"}]}},
+   {"opcode": "flippermoremove_startSteerAtSpeed", "depth": 2, "text": "start moving steer -30 at 30 % speed", "kind": "move"},
+   {"opcode": "else", "depth": 1, "text": "else", "kind": "control", "container": true},
+   {"opcode": "flippermoremove_startSteerAtSpeed", "depth": 2, "text": "start moving steer 30 at 30 % speed", "kind": "move"}
+  ]
+ ]
+}

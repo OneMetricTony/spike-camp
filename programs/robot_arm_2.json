@@ -1,0 +1,137 @@
+{
+ "name": "Chapter 2 - Robot Arm Code ",
+ "stacks": [
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": -130,
+    "y": 120,
+    "hat": true
+   },
+   {
+    "opcode": "flippersensors_resetYaw",
+    "depth": 0,
+    "text": "reset yaw angle",
+    "kind": "sensor"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 0,
+    "text": "motor E go shortest to position 0",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 0,
+    "text": "motor C go shortest to position 0",
+    "kind": "motor"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": 371,
+    "y": 104,
+    "hat": true
+   },
+   {
+    "opcode": "flippermotor_motorSetSpeed",
+    "depth": 0,
+    "text": "set motor C speed to 5 %",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 1,
+    "text": "motor E go shortest to position yaw angle",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if pitch angle < -3 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermotor_motorStartDirection",
+    "depth": 2,
+    "text": "start motor C counterclockwise",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if pitch angle > 3 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermotor_motorStartDirection",
+    "depth": 2,
+    "text": "start motor C clockwise",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if pitch angle < 3 and pitch angle > -3 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermotor_motorStop",
+    "depth": 2,
+    "text": "stop motor C",
+    "kind": "motor"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenButton",
+    "depth": 0,
+    "text": "when right button pressed",
+    "kind": "event",
+    "x": -117,
+    "y": 432,
+    "hat": true
+   },
+   {
+    "opcode": "flippermotor_motorTurnForDirection",
+    "depth": 0,
+    "text": "motor A turn clockwise for 7 degrees",
+    "kind": "motor"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenButton",
+    "depth": 0,
+    "text": "when left button pressed",
+    "kind": "event",
+    "x": -117,
+    "y": 635,
+    "hat": true
+   },
+   {
+    "opcode": "flippermotor_motorTurnForDirection",
+    "depth": 0,
+    "text": "motor A turn counterclockwise for 7 degrees",
+    "kind": "motor"
+   }
+  ]
+ ]
+}

@@ -1,0 +1,198 @@
+{
+ "name": "Barrier Gate",
+ "stacks": [
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": 29,
+    "y": 69,
+    "hat": true
+   },
+   {
+    "opcode": "flippermotor_motorSetSpeed",
+    "depth": 0,
+    "text": "set motor E speed to 15 %",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 0,
+    "text": "motor E go shortest to position 355",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOn",
+    "depth": 1,
+    "text": "turn on light matrix image [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait_until",
+    "depth": 1,
+    "text": "wait until A distance < 15",
+    "kind": "control"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 1,
+    "text": "play beep 84 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 1,
+    "text": "play beep 84 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "control_repeat",
+    "depth": 1,
+    "text": "repeat 5",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOnForTime",
+    "depth": 2,
+    "text": "turn on [5x5 image] for 0.1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOnForTime",
+    "depth": 2,
+    "text": "turn on [5x5 image] for 0.1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOnForTime",
+    "depth": 2,
+    "text": "turn on [5x5 image] for 0.1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOnForTime",
+    "depth": 2,
+    "text": "turn on [5x5 image] for 0.1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOnForTime",
+    "depth": 2,
+    "text": "turn on [5x5 image] for 0.1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if_else",
+    "depth": 1,
+    "text": "if C is color red then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "C",
+       "color": "red"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flipperlight_centerButtonLight",
+    "depth": 2,
+    "text": "set center button light to red",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOn",
+    "depth": 2,
+    "text": "turn on light matrix image [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippersound_playSoundUntilDone",
+    "depth": 2,
+    "text": "play sound \"Connect\" until done",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flippersound_playSound",
+    "depth": 2,
+    "text": "start sound \"Bus Door\"",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 2,
+    "text": "motor E go shortest to position 80",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_wait_until",
+    "depth": 2,
+    "text": "wait until A distance > 20",
+    "kind": "control"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 2,
+    "text": "wait 1 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 2,
+    "text": "motor E go shortest to position 355",
+    "kind": "motor"
+   },
+   {
+    "opcode": "else",
+    "depth": 1,
+    "text": "else",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperlight_centerButtonLight",
+    "depth": 2,
+    "text": "set center button light to black",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOn",
+    "depth": 2,
+    "text": "turn on light matrix image [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 2,
+    "text": "play beep 72 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 2,
+    "text": "play beep 72 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 2,
+    "text": "wait 1 seconds",
+    "kind": "control"
+   }
+  ]
+ ]
+}

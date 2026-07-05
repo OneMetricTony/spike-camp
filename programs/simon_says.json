@@ -1,0 +1,809 @@
+{
+ "name": "Ch. 7 SIMON SAYS ",
+ "stacks": [
+  [
+   {
+    "opcode": "event_whenbroadcastreceived",
+    "depth": 0,
+    "text": "when I receive 1",
+    "kind": "event",
+    "x": 1378,
+    "y": -282,
+    "hat": true
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 0,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 0,
+    "text": "play beep 60 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 0,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   }
+  ],
+  [
+   {
+    "opcode": "event_whenbroadcastreceived",
+    "depth": 0,
+    "text": "when I receive 2",
+    "kind": "event",
+    "x": 1806,
+    "y": -261,
+    "hat": true
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 0,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 0,
+    "text": "play beep 62 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 0,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": -17,
+    "y": -129,
+    "hat": true
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set score to 0",
+    "kind": "data"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set direction show to 0",
+    "kind": "data"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 0,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait 2 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set charge to 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrixText",
+    "depth": 0,
+    "text": "M1 write Ready?",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait 2 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "data_deletealloflist",
+    "depth": 0,
+    "text": "delete all of colors to remember",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 1,
+    "text": "set count to 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 1,
+    "text": "set color selected to 0",
+    "kind": "data"
+   },
+   {
+    "opcode": "data_addtolist",
+    "depth": 1,
+    "text": "add color selected to colors to remember",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_repeat",
+    "depth": 1,
+    "text": "repeat length of colors to remember",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "event_broadcastandwait",
+    "depth": 2,
+    "text": "broadcast item count of colors to remember and wait",
+    "kind": "event"
+   },
+   {
+    "opcode": "data_changevariableby",
+    "depth": 2,
+    "text": "change count by 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 1,
+    "text": "set count to 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrixText",
+    "depth": 1,
+    "text": "M1 write Go",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_repeat",
+    "depth": 1,
+    "text": "repeat length of colors to remember",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set direction show to 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set color selected to 0",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_wait_until",
+    "depth": 2,
+    "text": "wait until color selected > 0",
+    "kind": "control"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 2,
+    "text": "if not color selected = item count of colors to remember then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 3,
+    "text": "set score to length of colors to remember",
+    "kind": "data"
+   },
+   {
+    "opcode": "event_broadcast",
+    "depth": 3,
+    "text": "broadcast game over",
+    "kind": "event"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set direction show to 0",
+    "kind": "data"
+   },
+   {
+    "opcode": "data_changevariableby",
+    "depth": 2,
+    "text": "change count by 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 1,
+    "text": "set charge to 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrixFor",
+    "depth": 1,
+    "text": "M1 turn on [5x5 image] for 2 seconds",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "x": 648,
+    "y": -99,
+    "hat": true
+   },
+   {
+    "opcode": "control_repeat_until",
+    "depth": 0,
+    "text": "repeat until direction show = 0",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if roll angle > 10 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 2,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if roll angle < -10 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 2,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if pitch angle < -10 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 2,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if pitch angle > 10 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 2,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "event_whenbroadcastreceived",
+    "depth": 0,
+    "text": "when I receive 4",
+    "kind": "event",
+    "x": 1809,
+    "y": 98,
+    "hat": true
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 0,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 0,
+    "text": "play beep 65 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 0,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   }
+  ],
+  [
+   {
+    "opcode": "event_whenbroadcastreceived",
+    "depth": 0,
+    "text": "when I receive 3",
+    "kind": "event",
+    "x": 1374,
+    "y": 105,
+    "hat": true
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 0,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 0,
+    "text": "play beep 64 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrix",
+    "depth": 0,
+    "text": "M1 turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait .5 seconds",
+    "kind": "control"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    },
+    "x": 1193,
+    "y": 477,
+    "hat": true
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 0,
+    "text": "play beep 60 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set color selected to 1",
+    "kind": "data"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    },
+    "x": 1187,
+    "y": 707,
+    "hat": true
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 0,
+    "text": "play beep 62 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set color selected to 2",
+    "kind": "data"
+   }
+  ],
+  [
+   {
+    "opcode": "event_whenbroadcastreceived",
+    "depth": 0,
+    "text": "when I receive game over",
+    "kind": "event",
+    "x": 787,
+    "y": 864,
+    "hat": true
+   },
+   {
+    "opcode": "flippercontrol_stopOtherStacks",
+    "depth": 0,
+    "text": "stop other stacks",
+    "kind": "control"
+   },
+   {
+    "opcode": "flippermusic_setTempo",
+    "depth": 0,
+    "text": "set tempo to 110 bpm",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_setInstrument",
+    "depth": 0,
+    "text": "set instrument to 3",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 64 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 60 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 57 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 55 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .75 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 64 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "control_repeat",
+    "depth": 0,
+    "text": "repeat 2",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 1,
+    "text": "play note 64 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 1,
+    "text": "rest for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 60 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 64 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 67 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .75 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 55 for .25 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .75 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrixText",
+    "depth": 0,
+    "text": "M1 write Score",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperdisplay_ledMatrixText",
+    "depth": 0,
+    "text": "M1 write score",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait 3 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "flippercontrol_stop",
+    "depth": 0,
+    "text": "stop all",
+    "kind": "control"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    },
+    "x": 1181,
+    "y": 928,
+    "hat": true
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 0,
+    "text": "play beep 64 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set color selected to 3",
+    "kind": "data"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    },
+    "x": 1183,
+    "y": 1164,
+    "hat": true
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 0,
+    "text": "play beep 65 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set color selected to 4",
+    "kind": "data"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "x": 1189,
+    "y": 1410,
+    "hat": true
+   },
+   {
+    "opcode": "flippermusic_setTempo",
+    "depth": 0,
+    "text": "set tempo to 70 bpm",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_setInstrument",
+    "depth": 0,
+    "text": "set instrument to 3",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 50 for .15 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .01 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 53 for .15 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .01 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 57 for .15 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .01 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 60 for .3 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .2 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 57 for .2 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_restForBeats",
+    "depth": 0,
+    "text": "rest for .01 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 60 for .7 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set charge to 0",
+    "kind": "data"
+   }
+  ]
+ ]
+}

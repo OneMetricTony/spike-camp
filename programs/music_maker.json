@@ -1,0 +1,21 @@
+{
+ "name": "Music Maker (reconstructed)",
+ "stacks": [
+  [
+   {"opcode": "flipperevents_whenProgramStarts", "depth": 0, "text": "when program starts", "kind": "event", "hat": true, "x": 0, "y": 0, "label": "Sequencer"},
+   {"opcode": "flippermusic_setInstrument", "depth": 0, "text": "set instrument to piano", "kind": "music"},
+   {"opcode": "flippermusic_setTempo", "depth": 0, "text": "set tempo to 100 bpm", "kind": "music"},
+   {"opcode": "control_forever", "depth": 0, "text": "forever", "kind": "control", "container": true},
+   {"opcode": "control_if", "depth": 1, "text": "if A is color yellow then", "kind": "control", "container": true, "cond": {"join": "single", "terms": [{"type": "is_color", "port": "A", "color": "yellow"}]}},
+   {"opcode": "flippermusic_playNoteForBeats", "depth": 2, "text": "play note 60 for 0.5 beats", "kind": "music"},
+   {"opcode": "control_if", "depth": 1, "text": "if A is color blue then", "kind": "control", "container": true, "cond": {"join": "single", "terms": [{"type": "is_color", "port": "A", "color": "blue"}]}},
+   {"opcode": "flippermusic_playNoteForBeats", "depth": 2, "text": "play note 62 for 0.5 beats", "kind": "music"},
+   {"opcode": "control_if", "depth": 1, "text": "if A is color magenta then", "kind": "control", "container": true, "cond": {"join": "single", "terms": [{"type": "is_color", "port": "A", "color": "magenta"}]}},
+   {"opcode": "flippermusic_playNoteForBeats", "depth": 2, "text": "play note 64 for 0.5 beats", "kind": "music"},
+   {"opcode": "control_if", "depth": 1, "text": "if A is color green then", "kind": "control", "container": true, "cond": {"join": "single", "terms": [{"type": "is_color", "port": "A", "color": "green"}]}},
+   {"opcode": "flippermusic_playNoteForBeats", "depth": 2, "text": "play note 65 for 0.5 beats", "kind": "music"},
+   {"opcode": "control_if", "depth": 1, "text": "if A is color red then", "kind": "control", "container": true, "cond": {"join": "single", "terms": [{"type": "is_color", "port": "A", "color": "red"}]}},
+   {"opcode": "flippermusic_playNoteForBeats", "depth": 2, "text": "play note 67 for 0.5 beats", "kind": "music"}
+  ]
+ ]
+}

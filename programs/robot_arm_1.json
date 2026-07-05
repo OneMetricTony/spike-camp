@@ -1,0 +1,354 @@
+{
+ "name": "Manipulator Arm",
+ "stacks": [
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "or",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "red",
+       "join": "or"
+      },
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "blue",
+       "join": "or"
+      },
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "green",
+       "join": "or"
+      },
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "yellow",
+       "join": "or"
+      },
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "black",
+       "join": "or"
+      }
+     ]
+    },
+    "x": -69,
+    "y": -44,
+    "hat": true
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 0,
+    "text": "play beep 72 for 0.2 seconds",
+    "kind": "sound"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": -78,
+    "y": 170,
+    "hat": true,
+    "label": "Arm Moving"
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if F is color black then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "black"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippermotor_motorStop",
+    "depth": 2,
+    "text": "stop motor CE",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOn",
+    "depth": 2,
+    "text": "turn on light matrix image [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if F is color red then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "red"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippermotor_motorSetSpeed",
+    "depth": 2,
+    "text": "set motor C speed to 5 %",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorStartDirection",
+    "depth": 2,
+    "text": "start motor C clockwise",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOn",
+    "depth": 2,
+    "text": "turn on light matrix image [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if F is color yellow then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "yellow"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippermotor_motorSetSpeed",
+    "depth": 2,
+    "text": "set motor C speed to 5 %",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorStartDirection",
+    "depth": 2,
+    "text": "start motor C counterclockwise",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOn",
+    "depth": 2,
+    "text": "turn on light matrix image [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if F is color blue then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "blue"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippermotor_motorSetSpeed",
+    "depth": 2,
+    "text": "set motor E speed to 7 %",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorStartDirection",
+    "depth": 2,
+    "text": "start motor E counterclockwise",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOn",
+    "depth": 2,
+    "text": "turn on light matrix image [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if F is color green then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "F",
+       "color": "green"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippermotor_motorSetSpeed",
+    "depth": 2,
+    "text": "set motor E speed to 7 %",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorStartDirection",
+    "depth": 2,
+    "text": "start motor E clockwise",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flipperlight_lightDisplayImageOn",
+    "depth": 2,
+    "text": "turn on light matrix image [5x5 image]",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": 441,
+    "y": 169,
+    "hat": true,
+    "label": "Hand"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 0,
+    "text": "motor A go shortest to position 40",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "control_wait_until",
+    "depth": 1,
+    "text": "wait until D is ?",
+    "kind": "control",
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "control_wait_until",
+    "depth": 1,
+    "text": "wait until D is ?",
+    "kind": "control",
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "released"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 1,
+    "text": "play beep 84 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 1,
+    "text": "play beep 84 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flippermoremotor_motorStartPower",
+    "depth": 1,
+    "text": "start motor A at -100 % power",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_wait_until",
+    "depth": 1,
+    "text": "wait until D is ?",
+    "kind": "control",
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 1,
+    "text": "play beep 60 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flippersound_beepForTime",
+    "depth": 1,
+    "text": "play beep 60 for 0.2 seconds",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flippermotor_motorGoDirectionToPosition",
+    "depth": 1,
+    "text": "motor A go shortest to position 40",
+    "kind": "motor"
+   }
+  ]
+ ]
+}

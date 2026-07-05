@@ -1,0 +1,356 @@
+{
+ "name": "Sumo 1",
+ "stacks": [
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": -129,
+    "y": 37,
+    "hat": true
+   },
+   {
+    "opcode": "flipperdisplay_ledImageFor",
+    "depth": 0,
+    "text": "turn on [5x5 image] for 1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperdisplay_ledImageFor",
+    "depth": 0,
+    "text": "turn on [5x5 image] for 1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperdisplay_ledImageFor",
+    "depth": 0,
+    "text": "turn on [5x5 image] for 1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set action to 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if action = 1 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermoremove_startSteerAtSpeed",
+    "depth": 2,
+    "text": "start moving steer 0 at -25 % speed",
+    "kind": "move"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if action = 2 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermoremove_steerDistanceAtSpeed",
+    "depth": 2,
+    "text": "move steer 0 for 2 rotations at 75 % speed",
+    "kind": "move"
+   },
+   {
+    "opcode": "flippermoremove_steerDistanceAtSpeed",
+    "depth": 2,
+    "text": "move steer pick random -100 to 100 for 2 seconds at 75 % speed",
+    "kind": "move"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set action to 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if action = 3 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippersound_playSoundUntilDone",
+    "depth": 2,
+    "text": "play sound \"Cat Meow 1\" until done",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flippermoremove_startSteerAtSpeed",
+    "depth": 2,
+    "text": "start moving steer 0 at -75 % speed",
+    "kind": "move"
+   },
+   {
+    "opcode": "control_wait_until",
+    "depth": 2,
+    "text": "wait until D distance > 8",
+    "kind": "control"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set action to 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if action = 4 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermove_stopMove",
+    "depth": 2,
+    "text": "stop moving",
+    "kind": "move"
+   },
+   {
+    "opcode": "flippermoremove_steerDistanceAtSpeed",
+    "depth": 2,
+    "text": "move steer 0 for 1 rotations at 75 % speed",
+    "kind": "move"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set action to 1",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if action = 5 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermoremove_startSteerAtSpeed",
+    "depth": 2,
+    "text": "start moving steer 0 at 75 % speed",
+    "kind": "move"
+   },
+   {
+    "opcode": "control_wait_until",
+    "depth": 2,
+    "text": "wait until E is ?",
+    "kind": "control",
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "E",
+       "state": "released"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippermove_stopMove",
+    "depth": 2,
+    "text": "stop moving",
+    "kind": "move"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set action to 1",
+    "kind": "data"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": 387,
+    "y": 46,
+    "hat": true
+   },
+   {
+    "opcode": "flippermove_setMovementPair",
+    "depth": 0,
+    "text": "set movement motors to CF",
+    "kind": "move"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenButton",
+    "depth": 0,
+    "text": "when left button pressed",
+    "kind": "event",
+    "x": 808,
+    "y": 41,
+    "hat": true
+   },
+   {
+    "opcode": "flippercontrol_stop",
+    "depth": 0,
+    "text": "stop all",
+    "kind": "control"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": 679,
+    "y": 501,
+    "hat": true
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if flippersensors_isReflectivity then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set action to 2",
+    "kind": "data"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": 670,
+    "y": 803,
+    "hat": true
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if D distance < 6 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set action to 3",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if D distance < 6 and flippersensors_isReflectivity then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set action to 4",
+    "kind": "data"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": 676,
+    "y": 1253,
+    "hat": true
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if E is ? then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "E",
+       "state": "pressed"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set action to 5",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 1,
+    "text": "if E is ? and flippersensors_isReflectivity then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "E",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 2,
+    "text": "set action to 4",
+    "kind": "data"
+   }
+  ]
+ ]
+}

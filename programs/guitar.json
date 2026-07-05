@@ -1,0 +1,235 @@
+{
+ "name": "Chapter 3 - Guitar Code",
+ "stacks": [
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "and",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "C",
+       "color": "magenta",
+       "join": "and"
+      },
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    },
+    "x": -50,
+    "y": -42,
+    "hat": true
+   },
+   {
+    "opcode": "flippermusic_setInstrument",
+    "depth": 0,
+    "text": "set instrument to 5",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 60 for .5 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flipperdisplay_ledImage",
+    "depth": 0,
+    "text": "turn on [5x5 image]",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "and",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "C",
+       "color": "red",
+       "join": "and"
+      },
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    },
+    "x": 806,
+    "y": -49,
+    "hat": true
+   },
+   {
+    "opcode": "flippermusic_setInstrument",
+    "depth": 0,
+    "text": "set instrument to 5",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 66 for .5 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flipperdisplay_ledImage",
+    "depth": 0,
+    "text": "turn on [5x5 image]",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "and",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "C",
+       "color": "blue",
+       "join": "and"
+      },
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    },
+    "x": -60,
+    "y": 248,
+    "hat": true
+   },
+   {
+    "opcode": "flippermusic_setInstrument",
+    "depth": 0,
+    "text": "set instrument to 5",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 62 for .5 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flipperdisplay_ledImage",
+    "depth": 0,
+    "text": "turn on [5x5 image]",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "and",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "C",
+       "color": "yellow",
+       "join": "and"
+      },
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    },
+    "x": 803,
+    "y": 255,
+    "hat": true
+   },
+   {
+    "opcode": "flippermusic_setInstrument",
+    "depth": 0,
+    "text": "set instrument to 5",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 67 for .5 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flipperdisplay_ledImage",
+    "depth": 0,
+    "text": "turn on [5x5 image]",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenCondition",
+    "depth": 0,
+    "text": "when ?",
+    "kind": "event",
+    "cond": {
+     "join": "and",
+     "terms": [
+      {
+       "type": "is_color",
+       "port": "C",
+       "color": "cyan",
+       "join": "and"
+      },
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed",
+       "join": "and"
+      }
+     ]
+    },
+    "x": -62,
+    "y": 535,
+    "hat": true
+   },
+   {
+    "opcode": "flippermusic_setInstrument",
+    "depth": 0,
+    "text": "set instrument to 5",
+    "kind": "music"
+   },
+   {
+    "opcode": "flippermusic_playNoteForBeats",
+    "depth": 0,
+    "text": "play note 65 for .5 beats",
+    "kind": "music"
+   },
+   {
+    "opcode": "flipperdisplay_ledImage",
+    "depth": 0,
+    "text": "turn on [5x5 image]",
+    "kind": "light"
+   }
+  ]
+ ]
+}

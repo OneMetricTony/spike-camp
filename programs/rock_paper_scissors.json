@@ -1,0 +1,242 @@
+{
+ "name": "Ch 1 Rock Paper Scissor",
+ "stacks": [
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": -125,
+    "y": 178,
+    "hat": true
+   },
+   {
+    "opcode": "flipperdisplay_ledText",
+    "depth": 0,
+    "text": "write Left",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "procedures_definition",
+    "depth": 0,
+    "text": "define play again",
+    "kind": "proc",
+    "x": 330,
+    "y": 178,
+    "hat": true
+   },
+   {
+    "opcode": "flippersound_playSoundUntilDone",
+    "depth": 0,
+    "text": "play sound \"Baa\" until done",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flipperdisplay_ledImageFor",
+    "depth": 0,
+    "text": "turn on [5x5 image] for 2 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperdisplay_displayOff",
+    "depth": 0,
+    "text": "turn off pixels",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperdisplay_ledText",
+    "depth": 0,
+    "text": "write Left",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "procedures_definition",
+    "depth": 0,
+    "text": "define RPS",
+    "kind": "proc",
+    "x": 782,
+    "y": 190,
+    "hat": true
+   },
+   {
+    "opcode": "flipperdisplay_ledImage",
+    "depth": 0,
+    "text": "turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait_until",
+    "depth": 0,
+    "text": "wait until flippersensors_ismotion",
+    "kind": "control"
+   },
+   {
+    "opcode": "data_setvariableto",
+    "depth": 0,
+    "text": "set Rps_random to pick random 1 to 3",
+    "kind": "data"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 0,
+    "text": "if Rps_random = 1 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperdisplay_ledImage",
+    "depth": 1,
+    "text": "turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperdisplay_centerButtonLight",
+    "depth": 1,
+    "text": "set center button light to red",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 0,
+    "text": "if Rps_random = 2 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperdisplay_ledImage",
+    "depth": 1,
+    "text": "turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperdisplay_centerButtonLight",
+    "depth": 1,
+    "text": "set center button light to green",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 0,
+    "text": "if Rps_random = 3 then",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flipperdisplay_ledImage",
+    "depth": 1,
+    "text": "turn on [5x5 image]",
+    "kind": "light"
+   },
+   {
+    "opcode": "flipperdisplay_centerButtonLight",
+    "depth": 1,
+    "text": "set center button light to azure",
+    "kind": "light"
+   },
+   {
+    "opcode": "control_wait",
+    "depth": 0,
+    "text": "wait 5 seconds",
+    "kind": "control"
+   },
+   {
+    "opcode": "flipperdisplay_ledText",
+    "depth": 0,
+    "text": "write Right",
+    "kind": "light"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenButton",
+    "depth": 0,
+    "text": "when left button pressed",
+    "kind": "event",
+    "x": -130,
+    "y": 342,
+    "hat": true
+   },
+   {
+    "opcode": "procedures_call",
+    "depth": 0,
+    "text": "call start game",
+    "kind": "proc"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenButton",
+    "depth": 0,
+    "text": "when right button pressed",
+    "kind": "event",
+    "x": -130,
+    "y": 495,
+    "hat": true
+   },
+   {
+    "opcode": "procedures_call",
+    "depth": 0,
+    "text": "call play again",
+    "kind": "proc"
+   }
+  ],
+  [
+   {
+    "opcode": "procedures_definition",
+    "depth": 0,
+    "text": "define start game",
+    "kind": "proc",
+    "x": 336,
+    "y": 550,
+    "hat": true
+   },
+   {
+    "opcode": "flippersound_playSoundUntilDone",
+    "depth": 0,
+    "text": "play sound \"Coin\" until done",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flipperdisplay_ledImageFor",
+    "depth": 0,
+    "text": "turn on [5x5 image] for 1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippersound_playSoundUntilDone",
+    "depth": 0,
+    "text": "play sound \"Coin\" until done",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flipperdisplay_ledImageFor",
+    "depth": 0,
+    "text": "turn on [5x5 image] for 1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "flippersound_playSoundUntilDone",
+    "depth": 0,
+    "text": "play sound \"Coin\" until done",
+    "kind": "sound"
+   },
+   {
+    "opcode": "flipperdisplay_ledImageFor",
+    "depth": 0,
+    "text": "turn on [5x5 image] for 1 seconds",
+    "kind": "light"
+   },
+   {
+    "opcode": "procedures_call",
+    "depth": 0,
+    "text": "call RPS",
+    "kind": "proc"
+   }
+  ]
+ ]
+}

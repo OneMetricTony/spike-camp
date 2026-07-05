@@ -1,0 +1,169 @@
+{
+ "name": "sp多米诺2-弯",
+ "stacks": [
+  [
+   {
+    "opcode": "procedures_definition",
+    "depth": 0,
+    "text": "define 启动",
+    "kind": "proc",
+    "x": -468,
+    "y": 224,
+    "hat": true
+   },
+   {
+    "opcode": "control_if",
+    "depth": 0,
+    "text": "if F is ? then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "F",
+       "state": "pressed"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippermove_move",
+    "depth": 1,
+    "text": "move forward for 1 cm",
+    "kind": "move"
+   },
+   {
+    "opcode": "control_repeat",
+    "depth": 1,
+    "text": "repeat 10",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "flippermotor_motorTurnForDirection",
+    "depth": 2,
+    "text": "motor C turn clockwise for 640 degrees",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermotor_motorTurnForDirection",
+    "depth": 2,
+    "text": "motor C turn counterclockwise for 640 degrees",
+    "kind": "motor"
+   },
+   {
+    "opcode": "flippermove_move",
+    "depth": 2,
+    "text": "move forward for 3 cm",
+    "kind": "move"
+   },
+   {
+    "opcode": "flippercontrol_stop",
+    "depth": 1,
+    "text": "stop all",
+    "kind": "control"
+   }
+  ],
+  [
+   {
+    "opcode": "procedures_definition",
+    "depth": 0,
+    "text": "define 初始调整",
+    "kind": "proc",
+    "x": -28,
+    "y": 256,
+    "hat": true
+   },
+   {
+    "opcode": "control_if",
+    "depth": 0,
+    "text": "if flippersensors_buttonIsPressed then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippermotor_motorTurnForDirection",
+    "depth": 1,
+    "text": "motor C turn clockwise for 0.1 seconds",
+    "kind": "motor"
+   },
+   {
+    "opcode": "control_if",
+    "depth": 0,
+    "text": "if flippersensors_buttonIsPressed then",
+    "kind": "control",
+    "container": true,
+    "cond": {
+     "join": "single",
+     "terms": [
+      {
+       "type": "is_pressed",
+       "port": "D",
+       "state": "pressed"
+      }
+     ]
+    }
+   },
+   {
+    "opcode": "flippermotor_motorTurnForDirection",
+    "depth": 1,
+    "text": "motor C turn counterclockwise for 0.1 seconds",
+    "kind": "motor"
+   }
+  ],
+  [
+   {
+    "opcode": "flipperevents_whenProgramStarts",
+    "depth": 0,
+    "text": "when program starts",
+    "kind": "event",
+    "x": 474,
+    "y": 231,
+    "hat": true
+   },
+   {
+    "opcode": "flippermove_setMovementPair",
+    "depth": 0,
+    "text": "set movement motors to AE",
+    "kind": "move"
+   },
+   {
+    "opcode": "flippermove_movementSpeed",
+    "depth": 0,
+    "text": "set movement speed to -10 %",
+    "kind": "move"
+   },
+   {
+    "opcode": "control_forever",
+    "depth": 0,
+    "text": "forever",
+    "kind": "control",
+    "container": true
+   },
+   {
+    "opcode": "procedures_call",
+    "depth": 1,
+    "text": "call 初始调整",
+    "kind": "proc"
+   },
+   {
+    "opcode": "procedures_call",
+    "depth": 1,
+    "text": "call 启动",
+    "kind": "proc"
+   }
+  ]
+ ]
+}
