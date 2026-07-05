@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SPIKE PRIME+ — Block Editor</title>
+<script src="../blockly/blockly_compressed.js"></script>
+<script src="../blockly/blocks_compressed.js"></script>
+<script src="../blockly/msg/en.js"></script>
+<script src="../spike_blocks_full.js"></script>
+<style>
+  :root{
+    --spike-bg:#ffffff; --spike-canvas:#f7f8fa; --spike-ink:#2b3a4a;
+    --spike-teal:#00a3c7; --spike-teal-d:#0089a8; --spike-line:#e6eaf0;
+    --spike-panel:#fbfcfe;
+  }
+  html,body{margin:0;height:100%;font-family:'Segoe UI',system-ui,'Helvetica Neue',Arial,sans-serif;background:var(--spike-canvas);color:var(--spike-ink);}
+  /* top bar — clean white like the SPIKE app */
+  #top{height:58px;background:var(--spike-bg);color:var(--spike-ink);display:flex;align-items:center;gap:10px;
+       padding:0 16px;box-sizing:border-box;border-bottom:1px solid var(--spike-line);box-shadow:0 1px 4px rgba(30,40,60,.06);}
+  #top .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#00c2e8,#0089a8);
+       display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 5px rgba(0,140,170,.35);}
+  #top h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.2px;color:#33475b;}
+  #top h1 small{font-weight:500;color:#8a9bb0;}
+  #top .sp{flex:1}
+  #progname{color:#0089a8 !important;background:#e6f7fb;padding:4px 10px;border-radius:14px;}
+  /* rounded pill buttons in the SPIKE palette */
+  button{background:var(--spike-teal);color:#fff;border:none;border-radius:20px;padding:9px 16px;
+         font-weight:700;cursor:pointer;font-size:13px;transition:filter .12s,transform .05s;}
+  button:hover{filter:brightness(1.06)} button:active{transform:translateY(1px)}
+  button.ghost{background:#eef1f6;color:#53637a}
+  #lessons button.sel{background:#0089a8;color:#fff}
+  #wrap{position:absolute;top:58px;left:0;right:0;bottom:0}
+  #blockly{position:absolute;left:0;top:0;right:320px;bottom:0;background:var(--spike-canvas)}
+  /* right panel — light card, like SPIKE's side panels */
+  #side{position:absolute;right:0;top:0;width:320px;bottom:0;background:var(--spike-panel);color:#3a4a5c;
+        box-sizing:border-box;padding:14px;overflow:auto;border-left:1px solid var(--spike-line)}
+  #side h3{margin:.4em 0 .3em;color:#0089a8;font-size:12px;text-transform:uppercase;letter-spacing:.6px;font-weight:800}
+  #status{font-size:12px;color:#5a6b7e;min-height:18px;margin:6px 0;line-height:1.4}
+  pre#code{white-space:pre-wrap;background:#f2f5fa;color:#2f6f4f;padding:10px;border-radius:10px;font-size:11px;
+           line-height:1.4;border:1px solid var(--spike-line)}
+  input[type=file]{display:none}
+  .drop{border:2px dashed #79c7d8;border-radius:12px;padding:16px;text-align:center;color:#4a8ba0;font-size:12px;
+        cursor:pointer;margin-bottom:10px;background:#f0fafc;transition:background .12s}
+  .drop:hover,.drop.drag{background:#e2f5f9;border-color:#0089a8}
+  /* nicer Blockly category tabs */
+  .blocklyToolboxCategory{padding:6px 8px !important;border-radius:8px;margin:2px 4px}
+  .blocklyTreeLabel{font-weight:600 !important;font-size:13px !important}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="logo"><a href="../" title="SPIKE PRIME+ home" style="text-decoration:none">🧩</a></div>
+  <h1>SPIKE PRIME+ <small>· Block Editor</small></h1>
+  <span id="progname" style="font-weight:700;font-size:13px;margin-left:6px"></span>
+  <div class="sp"></div>
+  <button class="ghost" onclick="replayLesson()">▶ Replay</button>
+  <button class="ghost" onclick="toggleCode()">&lt;/&gt; Code</button>
+  <button class="ghost" onclick="exportPy()">Export .py</button>
+  <button id="btbtn" onclick="bleConnect()" style="background:#0a84ff">🔵 Connect BT</button>
+  <button class="ghost" onclick="bleBeepTest()">🔔 BT Beep Test</button>
+  <button onclick="uploadToHub()" style="background:#59c059">⬆ Upload (run now)</button>
+  <button onclick="stopHub()" style="background:#e5484d">⏹ Stop</button>
+  <button class="ghost" onclick="ws.clear()">Clear</button>
+</div>
+<div id="wrap">
+  <div id="blockly"></div>
+  <div id="side">
+    <h3>Camp lessons</h3>
+    <div id="lessons" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+    <div id="status">Ready.</div>
+    <h3 id="codehdr">Detected program</h3>
+    <pre id="code"></pre>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// 1. SPIKE Prime block definitions (colour-matched to the real app)
+// ---------------------------------------------------------------------------
+const C = {control:'#ff9800', motor:'#3aa0ff', sensor:'#4fc3d9', sound:'#a45cff', light:'#a45cff', event:'#ffab19', op:'#59c059'};
+Blockly.defineBlocksWithJsonArray([
+ {type:'spk_when_start',message0:'when program starts %1',args0:[{type:'field_label_serializable',name:'LABEL',text:''}],nextStatement:null,colour:C.event,tooltip:''},
+ {type:'spk_when_cond',message0:'when %1',args0:[{type:'input_value',name:'C'}],nextStatement:null,colour:C.event},
+ {type:'spk_forever',message0:'forever %1',args0:[{type:'input_statement',name:'DO'}],previousStatement:null,nextStatement:null,colour:C.control},
+ {type:'spk_if',message0:'if %1 then %2',args0:[{type:'input_value',name:'C'},{type:'input_statement',name:'DO'}],previousStatement:null,nextStatement:null,colour:C.control},
+ {type:'spk_wait_until',message0:'wait until %1',args0:[{type:'input_value',name:'C'}],previousStatement:null,nextStatement:null,colour:C.control},
+ {type:'spk_repeat',message0:'repeat %1 %2',args0:[{type:'field_number',name:'N',value:10},{type:'input_statement',name:'DO'}],previousStatement:null,nextStatement:null,colour:C.control},
+ {type:'spk_is_color',message0:'%1 is color %2',args0:[{type:'field_dropdown',name:'PORT',options:[['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['F','F']]},{type:'field_dropdown',name:'COLOR',options:[['red','red'],['yellow','yellow'],['blue','blue'],['green','green'],['black','black'],['white','white'],['cyan','cyan'],['violet','violet']]}],output:null,colour:C.sensor},
+ {type:'spk_is_pressed',message0:'%1 is %2',args0:[{type:'field_dropdown',name:'PORT',options:[['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['F','F']]},{type:'field_dropdown',name:'STATE',options:[['pressed','pressed'],['released','released']]}],output:null,colour:C.sensor},
+ {type:'spk_or',message0:'%1 or %2',args0:[{type:'input_value',name:'A'},{type:'input_value',name:'B'}],output:null,colour:C.op,inputsInline:true},
+ {type:'spk_and',message0:'%1 and %2',args0:[{type:'input_value',name:'A'},{type:'input_value',name:'B'}],output:null,colour:C.op,inputsInline:true},
+ {type:'spk_motor_speed',message0:'set motor %1 speed to %2 %',args0:[{type:'field_dropdown',name:'PORT',options:[['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['C+E','C+E'],['F','F']]},{type:'field_number',name:'SPD',value:50}],previousStatement:null,nextStatement:null,colour:C.motor},
+ {type:'spk_motor_start',message0:'start motor %1 %2',args0:[{type:'field_dropdown',name:'PORT',options:[['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['C+E','C+E'],['F','F']]},{type:'field_dropdown',name:'DIR',options:[['clockwise','cw'],['counterclockwise','ccw']]}],previousStatement:null,nextStatement:null,colour:C.motor},
+ {type:'spk_motor_stop',message0:'stop motor %1',args0:[{type:'field_dropdown',name:'PORT',options:[['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['C+E','C+E'],['F','F']]}],previousStatement:null,nextStatement:null,colour:C.motor},
+ {type:'spk_motor_power',message0:'start motor %1 at %2 % power',args0:[{type:'field_dropdown',name:'PORT',options:[['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['F','F']]},{type:'field_number',name:'PW',value:100}],previousStatement:null,nextStatement:null,colour:C.motor},
+ {type:'spk_motor_position',message0:'motor %1 go %2 to position %3',args0:[{type:'field_dropdown',name:'PORT',options:[['A','A'],['B','B'],['C','C'],['D','D'],['E','E'],['F','F']]},{type:'field_dropdown',name:'DIR',options:[['shortest path','shortest'],['clockwise','cw'],['counterclockwise','ccw']]},{type:'field_number',name:'POS',value:0}],previousStatement:null,nextStatement:null,colour:C.motor},
+ {type:'spk_beep',message0:'play beep %1 for %2 seconds',args0:[{type:'field_number',name:'NOTE',value:60},{type:'field_number',name:'DUR',value:0.2}],previousStatement:null,nextStatement:null,colour:C.sound},
+ {type:'spk_light',message0:'turn on light matrix',previousStatement:null,nextStatement:null,colour:C.light},
+ // Generic fallbacks — render ANY decoded block faithfully (label carries the full text)
+ {type:'spk_generic',message0:'%1',args0:[{type:'field_label_serializable',name:'TXT',text:'…'}],previousStatement:null,nextStatement:null,colour:C.control},
+ {type:'spk_generic_hat',message0:'%1',args0:[{type:'field_label_serializable',name:'TXT',text:'…'}],nextStatement:null,colour:C.event},
+ {type:'spk_generic_c',message0:'%1 %2',args0:[{type:'field_label_serializable',name:'TXT',text:'…'},{type:'input_statement',name:'DO'}],previousStatement:null,nextStatement:null,colour:C.control},
+]);
+// SPIKE-ish colours for generic blocks, by decoded category
+const KIND_COLOUR = {event:'#ffab19', control:'#ff9800', motor:'#3aa0ff', move:'#e661ac',
+                     sensor:'#4fc3d9', sound:'#a45cff', music:'#a45cff', light:'#7b61ff',
+                     op:'#59c059', data:'#ff8c1a', proc:'#ff6680'};
+
+// SPIKE/Scratch-style look: rounded 'zelos' blocks + a matching theme
+const spikeTheme = Blockly.Theme.defineTheme('spike', {
+  base: Blockly.Themes.Classic,
+  fontStyle: { family: '"Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif', weight: '600', size: 11 },
+  componentStyles: {
+    workspaceBackgroundColour: '#f3f6fc',
+    toolboxBackgroundColour: '#e8edf6',
+    toolboxForegroundColour: '#2b3648',
+    flyoutBackgroundColour: '#e0e7f2',
+    flyoutForegroundColour: '#2b3648',
+    flyoutOpacity: 1,
+    scrollbarColour: '#c2ccdd',
+    insertionMarkerColour: '#2b3648',
+    insertionMarkerOpacity: 0.4,
+    cursorColour: '#2b3648'
+  }
+});
+const ws = Blockly.inject('blockly',{
+  renderer:'zelos',
+  media:'../blockly/media/',
+  theme:spikeTheme,
+  toolbox:(window.SPIKE_FULL_TOOLBOX)||`<xml>
+   <category name="Events" colour="#ffab19"><block type="spk_when_start"></block><block type="spk_when_cond"></block></category>
+   <category name="Control" colour="#ff9800"><block type="spk_forever"></block><block type="spk_if"></block><block type="spk_wait_until"></block><block type="spk_repeat"></block></category>
+   <category name="Motors" colour="#3aa0ff"><block type="spk_motor_speed"></block><block type="spk_motor_start"></block><block type="spk_motor_stop"></block><block type="spk_motor_power"></block><block type="spk_motor_position"></block></category>
+   <category name="Sensors" colour="#4fc3d9"><block type="spk_is_color"></block><block type="spk_is_pressed"></block></category>
+   <category name="Sound &amp; Light" colour="#a45cff"><block type="spk_beep"></block><block type="spk_light"></block></category>
+   <category name="Operators" colour="#59c059"><block type="spk_or"></block></category>
+  </xml>`,
+  zoom:{controls:true,wheel:true,startScale:0.85},
+  trashcan:true, scrollbars:true, grid:{spacing:22,length:2,colour:'#3a465c',snap:true}
+});
+
+// ---------------------------------------------------------------------------
+// 2. Map a decoded block (opcode/category + fields) -> a Blockly block spec
+// ---------------------------------------------------------------------------
+function genericSpec(b){
+  if(b.hat) return {type:'spk_generic_hat',labelText:b.text,kind:b.kind||'event'};
+  if(b.container) return {type:'spk_generic_c',container:'DO',labelText:b.text,kind:b.kind||'control'};
+  return {type:'spk_generic',labelText:b.text,kind:b.kind||'control'};
+}
+function specFromDecoded(b){
+  // b: {opcode?, category?, text?, fields?, depth}
+  const op=(b.opcode||'').toLowerCase();
+  const t=(b.text||'').toLowerCase();
+  const f=b.fields||{};
+  const has=(s)=>op.includes(s)||t.includes(s);
+  if(has('whenprogramstarts')||has('when program starts')) return {type:'spk_when_start'};
+  if((op.includes('whencondition')||/^when /.test(t))&&b.cond) return {type:'spk_when_cond',cond:b.cond};
+  if(b.hat&&!has('whenprogramstarts')) return genericSpec(b);   // whenButton/whenDistance/broadcast/define
+  if(has('forever')) return {type:'spk_forever',container:'DO'};
+  if(op.includes('repeat_until')) return genericSpec(b);
+  // typed if/wait only when the structured condition survived decoding;
+  // otherwise the generic label keeps the condition readable inline
+  if(op.includes('control_if')||/^if /.test(t)) return b.cond?{type:'spk_if',container:'DO',cond:b.cond}:genericSpec(b);
+  if(op.includes('wait_until')||has('wait until')) return b.cond?{type:'spk_wait_until',cond:b.cond}:genericSpec(b);
+  if(op.includes('repeat')) return {type:'spk_repeat',container:'DO',fields:{N:num(t,10)}};
+  if(op.includes('motorsetspeed')||has('set motor')&&has('speed')) return {type:'spk_motor_speed',fields:{PORT:port(b.text,f),SPD:num(t,50)}};
+  if(op.includes('motorstartdirection')||(has('start motor')&&!has('power'))) return {type:'spk_motor_start',fields:{PORT:port(b.text,f),DIR:t.includes('counter')?'ccw':'cw'}};
+  if(op.includes('motorstop')||has('stop motor')) return {type:'spk_motor_stop',fields:{PORT:port(b.text,f)}};
+  if(op.includes('motorstartpower')||has('% power')||has('at -')||has('power')) return {type:'spk_motor_power',fields:{PORT:port(b.text,f),PW:num(t,100)}};
+  if(op.includes('godirectiontoposition')||has('to position')) return {type:'spk_motor_position',fields:{PORT:port(b.text,f),DIR:t.includes('shortest')?'shortest':(t.includes('counter')?'ccw':'cw'),POS:num(t,0)}};
+  if(op.includes('beepfortime')||has('play beep')) {const n=nums(t);return {type:'spk_beep',fields:{NOTE:n[0]??60,DUR:n[1]??0.2}};}
+  if(op.includes('iscolor')||has('is color')) return {type:'spk_is_color',output:true,fields:{PORT:port(b.text,f)||'F',COLOR:colorOf(b)}};
+  if(op.includes('ispressed')||((has('pressed')||has('released'))&&!b.hat)) return {type:'spk_is_pressed',output:true,fields:{PORT:port(b.text,f)||'D',STATE:t.includes('released')?'released':'pressed'}};
+  if(op.includes('operator_or')) return {type:'spk_or',output:true};
+  return genericSpec(b);   // never drop a block — render it as a labeled generic
+}
+function condFrom(b){ return b.cond||null; }
+function colorOf(b){ const t=(b.text||'').toLowerCase(); const f=b.fields||{};
+  if(f.COLOR) return f.COLOR;
+  for(const c of ['red','yellow','blue','green','black','white','cyan','violet']) if(t.includes(c)) return c;
+  return 'red'; }
+function port(t,f){ if(f&&f.PORT) return f.PORT;
+  let m=(t||'').match(/\b([A-F])\s*\+\s*([A-F])\b/); if(m) return m[1]+'+'+m[2];
+  m=(t||'').match(/\b(C\s?E|C\+E)\b/i); if(m) return 'C+E';
+  m=(t||'').match(/\bmotors?\s+([A-F])\b/i); if(m) return m[1].toUpperCase();
+  m=(t||'').match(/\b([A-F])\b/); return m?m[1].toUpperCase():null; }
+function num(t,d){ const m=(t||'').match(/-?\d+(?:\.\d+)?/); return m?parseFloat(m[0]):d; }
+function nums(t){ return ((t||'').match(/-?\d+(?:\.\d+)?/g)||[]).map(parseFloat); }
+
+// ---------------------------------------------------------------------------
+// 3. Live builder — creates each block with a "drag in" animation, in order,
+//    respecting depth for nesting (forever/if substacks).
+// ---------------------------------------------------------------------------
+let building=false;
+async function buildProgram(blocks){
+  if(building) return; building=true;
+  ws.clear();
+  setStatus('Building '+blocks.length+' blocks…');
+  let lastAt={}, parentAt={};
+  let xCursor=40, curTop=null;
+  let condTarget=null;               // an if/wait/when awaiting a condition
+  // Faithful layout: if the source carried real hat coordinates (.llsp3), place
+  // each stack at its true canvas position (normalised) so the WHEN bar lands
+  // on top of the two program-starts stacks exactly like SPIKE.
+  const coordHats = blocks.filter(b=>typeof b.x==='number' && typeof b.y==='number');
+  const useCoords = coordHats.length>0;
+  const minX = useCoords ? Math.min(...coordHats.map(b=>b.x)) : 0;
+  const minY = useCoords ? Math.min(...coordHats.map(b=>b.y)) : 0;
+  let looseX=40, looseY=null;        // tidy parking area for unconnectable blocks
+  const isOutputType = t=>/^(spk_is_color|spk_is_pressed|spk_or|spk_and)$/.test(t);
+  const placeLoose = (blk)=>{
+    if(looseY===null){ looseY = (curTop? stackBottom(curTop):200) + 80; }
+    blk.moveBy(looseX, looseY);
+    looseY += 46; if(looseY>looseY0()+700){ looseY=null; looseX+=220; }
+  };
+  const looseY0 = ()=> (curTop? stackBottom(curTop):200)+80;
+  for(let i=0;i<blocks.length;i++){
+    const dec=blocks[i]; const spec=specFromDecoded(dec);
+    if(!spec){ continue; }
+    const blk=ws.newBlock(spec.type);
+    if(spec.fields) for(const k in spec.fields){ try{blk.setFieldValue(String(spec.fields[k]),k);}catch(e){} }
+    if(spec.labelText){ try{blk.setFieldValue(spec.labelText,'TXT');}catch(e){} }
+    if(spec.kind&&/^spk_generic/.test(spec.type)){ try{blk.setColour(KIND_COLOUR[spec.kind]||'#ff9800');}catch(e){} }
+    blk.initSvg();
+    const depth=dec.depth||0;
+    // FIX 1: moving out to a shallower depth invalidates all deeper bookkeeping,
+    // otherwise a child can chain onto a *previous* sibling container's children.
+    Object.keys(lastAt).forEach(k=>{ if(+k>depth) delete lastAt[k]; });
+    Object.keys(parentAt).forEach(k=>{ if(+k>depth) delete parentAt[k]; });
+    let condSetThisIter=false;
+    const isHat=(spec.type==='spk_when_start'||spec.type==='spk_when_cond');
+    if(isOutputType(spec.type)){
+      // a reporter/boolean: attach as a condition where one is expected, else park it
+      if((spec.type==='spk_is_color'||spec.type==='spk_is_pressed') && condTarget &&
+         condTarget.getInput('C') && condTarget.getInput('C').connection &&
+         !condTarget.getInput('C').connection.targetBlock()){
+        condTarget.getInput('C').connection.connect(blk.outputConnection); condTarget=null;
+      } else { placeLoose(blk); }
+    } else if(isHat || (depth===0 && !lastAt[0])){
+      // start a NEW top-level stack
+      lastAt={}; parentAt={};
+      if(useCoords && typeof dec.x==='number'){
+        blk.moveBy(dec.x - minX + 40, dec.y - minY + 40);   // true SPIKE position
+      } else {
+        if(curTop){ xCursor = stackRight(curTop) + 60; }     // fallback: tidy columns
+        blk.moveBy(xCursor, 40);
+      }
+      if(dec.label){ try{ blk.setFieldValue(dec.label,'LABEL'); }catch(e){} }  // stack tag
+      lastAt[0]=blk; curTop=blk;
+    } else {
+      if(!connectByDepth(blk,spec,depth,lastAt,parentAt)) placeLoose(blk);
+    }
+    blk.render();
+    if(spec.cond) buildCondition(blk, spec.cond);   // rebuild nested boolean logic
+    // remember blocks that still need a condition (for the PNG flat-list path)
+    if(!spec.cond && (spec.type==='spk_if'||spec.type==='spk_wait_until'||spec.type==='spk_when_cond')){ condTarget=blk; condSetThisIter=true; }
+    await slideIn(blk);
+    if(spec.container){ parentAt[depth+1]=blk; lastAt[depth+1]=null; }
+    if(!isOutputType(spec.type)) lastAt[depth]=blk;
+    // FIX 3: a pending condition only binds to the IMMEDIATELY following reporter;
+    // if a normal statement intervenes first, drop it (avoids far-away mis-binding).
+    if(!condSetThisIter && !isOutputType(spec.type)) condTarget=null;
+    generate();
+  }
+  ws.render();
+  setStatus('Done — '+ws.getAllBlocks().length+' blocks placed ('+ws.getTopBlocks(false).length+' stacks).');
+  building=false;
+}
+// right edge of a whole stack (top block + all descendants), for column layout
+function stackRight(top){
+  let r=top.getBoundingRectangle().right;
+  try{ (top.getDescendants?top.getDescendants(false):[]).forEach(d=>{ const br=d.getBoundingRectangle(); if(br.right>r) r=br.right; }); }catch(e){}
+  return r;
+}
+// rebuild a nested boolean condition (e.g. F is color red OR F is color blue OR ...)
+function buildCondition(blk, cond){
+  if(!cond||!cond.terms||!cond.terms.length) return;
+  const input=blk.getInput('C'); if(!input||!input.connection) return;
+  const leaves=cond.terms.map(makeLeaf).filter(Boolean);
+  if(!leaves.length) return;
+  const expr=chainJoin(leaves, cond.join==='and'?'and':'or');
+  if(expr&&expr.outputConnection) input.connection.connect(expr.outputConnection);
+}
+function makeLeaf(term){
+  let b;
+  if(term.type==='is_color'){ b=ws.newBlock('spk_is_color');
+    try{b.setFieldValue(String(term.port||'F'),'PORT');}catch(e){}
+    try{b.setFieldValue(String(term.color||'red'),'COLOR');}catch(e){} }
+  else if(term.type==='is_pressed'){ b=ws.newBlock('spk_is_pressed');
+    try{b.setFieldValue(String(term.port||'D'),'PORT');}catch(e){}
+    try{b.setFieldValue(String(term.state||'pressed'),'STATE');}catch(e){} }
+  else return null;
+  b.initSvg(); b.render(); return b;
+}
+function chainJoin(leaves, join){
+  if(leaves.length===1) return leaves[0];
+  const jb=ws.newBlock(join==='and'?'spk_and':'spk_or'); jb.initSvg();
+  const a=jb.getInput('A'), bIn=jb.getInput('B');
+  if(a&&a.connection&&leaves[0].outputConnection) a.connection.connect(leaves[0].outputConnection);
+  const rest=chainJoin(leaves.slice(1), join);
+  if(bIn&&bIn.connection&&rest&&rest.outputConnection) bIn.connection.connect(rest.outputConnection);
+  jb.render(); return jb;
+}
+function parentContainerActive(parentAt,depth){ return !!parentAt[depth]; }
+// returns true if the block was connected into the stack, false otherwise.
+// FIX 2: exactly two ways to place a child at `depth` — chain after the previous
+// sibling at this depth, or enter this depth's own container. No fuzzy walk-up
+// (which could nest a child into a grandparent, i.e. too shallow).
+function connectByDepth(blk,spec,depth,lastAt,parentAt){
+  if(!blk.previousConnection) return false;
+  const prev=lastAt[depth];
+  if(prev && prev.nextConnection){
+    prev.nextConnection.connect(blk.previousConnection); return true;
+  }
+  const parent=parentAt[depth];               // the container whose substack IS this depth
+  if(parent){
+    const input=parent.getInput('DO');
+    if(input && input.connection && !input.connection.targetBlock()){
+      input.connection.connect(blk.previousConnection); return true;
+    }
+  }
+  return false;
+}
+// bottom edge of a whole stack (top block + descendants)
+function stackBottom(top){
+  let b=top.getBoundingRectangle().bottom;
+  try{ (top.getDescendants?top.getDescendants(false):[]).forEach(d=>{ const br=d.getBoundingRectangle(); if(br.bottom>b) b=br.bottom; }); }catch(e){}
+  return b;
+}
+// animate: fade the block in (opacity ONLY — never touch style.transform, which
+// would fight Blockly's own drag transforms and freeze the block).
+function slideIn(blk){
+  return new Promise(res=>{
+    const svg=blk.getSvgRoot(); if(!svg){res();return;}
+    const t0=performance.now(), dur=200;
+    svg.style.opacity='0';
+    function step(now){
+      const k=Math.min(1,(now-t0)/dur);
+      svg.style.opacity=String(k);
+      if(k<1) requestAnimationFrame(step); else {svg.style.opacity='';res();}
+    }
+    requestAnimationFrame(step);
+  }).then(()=>new Promise(r=>setTimeout(r,150)));
+}
+function setStatus(s){ document.getElementById('status').textContent=s; }
+let codeView=false;
+function toggleCode(){ codeView=!codeView;
+  document.getElementById('codehdr').textContent = codeView?'Python (runs in parallel)':'Detected program';
+  generate(); }
+function exportPy(){
+  const py=generatePython();
+  const nm=(document.getElementById('progname').textContent||'program').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'program';
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([py],{type:'text/x-python'}));
+  a.download=nm+'.py'; a.click();
+  setStatus('Exported '+nm+'.py'); }
+function generate(){ /* right panel: block outline OR generated Python */
+  if(codeView){ document.getElementById('code').textContent=generatePython(); return; }
+  const lines=[]; ws.getTopBlocks(true).forEach(tb=>{ dump(tb,0,lines); lines.push(''); });
+  document.getElementById('code').textContent=lines.join('\n');
+}
+function dump(b,d,out){ if(!b)return; out.push('  '.repeat(d)+'• '+b.type.replace('spk_',''));
+  const sub=b.getInput&&b.getInput('DO'); if(sub&&sub.connection&&sub.connection.targetBlock()) dump(sub.connection.targetBlock(),d+1,out);
+  if(b.getNextBlock&&b.getNextBlock()) dump(b.getNextBlock(),d,out);
+}
+
+// ---------------------------------------------------------------------------
+// 4. Camp lessons: manifest, picker, and ?lesson= deep links.
+//    Opening index.html?lesson=robot_arm_1 auto-drags that program in.
+// ---------------------------------------------------------------------------
+const LESSONS=[
+ {id:'robot_arm_1',        title:'Robot Arm I — Manipulator Arm'},
+ {id:'robot_arm_2',        title:'Robot Arm II — Tilt Control'},
+ {id:'barrier_gate',       title:'Barrier Gate'},
+ {id:'rock_paper_scissors',title:'Rock Paper Scissors'},
+ {id:'guitar',             title:'Guitar'},
+ {id:'bird',               title:'Bird'},
+ {id:'sumo',               title:'Sumo Bot'},
+ {id:'domino',             title:'Domino Machine'},
+ {id:'simon_says',         title:'Simon Says'},
+ {id:'music_maker',        title:'Music Maker (reconstructed)'},
+ {id:'color_image',        title:'Line Follower demo'},
+];
+let currentLesson=null;
+async function loadLesson(id){
+  const meta=LESSONS.find(l=>l.id===id);
+  setStatus('Loading '+(meta?meta.title:id)+' …');
+  try{
+    const r=await fetch('../programs/'+id+'.json');
+    if(!r.ok) throw new Error('program not found: '+id);
+    const data=await r.json();
+    currentLesson=id;
+    document.getElementById('progname').textContent='▶ '+data.name;
+    document.querySelectorAll('#lessons button').forEach(b=>b.classList.toggle('sel',b.dataset.id===id));
+    const blocks=data.stacks.flat();
+    setStatus('Dragging in '+blocks.length+' blocks…');
+    await buildProgram(blocks);
+  }catch(e){ setStatus('Error: '+e.message); }
+}
+function replayLesson(){ if(currentLesson) loadLesson(currentLesson); else setStatus('Pick a lesson first.'); }
+function initLessons(){
+  const box=document.getElementById('lessons');
+  LESSONS.forEach(l=>{
+    const b=document.createElement('button'); b.className='ghost'; b.dataset.id=l.id;
+    b.style.textAlign='left'; b.textContent=l.title;
+    b.onclick=()=>{ history.replaceState(null,'','?lesson='+l.id); loadLesson(l.id); };
+    box.appendChild(b);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 5. Generate SPIKE MicroPython from the workspace and RUN it on the hub
+//    (sends to the REPL — does NOT flash firmware / Hub OS)
+// ---------------------------------------------------------------------------
+const PORT_MAP={A:'port.A',B:'port.B',C:'port.C',D:'port.D',E:'port.E',F:'port.F','C+E':'port.C',C_E:'port.C'};
+function fv(b,n){ try{return b.getFieldValue(n);}catch(e){return null;} }
+// SPIKE note number -> frequency (Hz), matching the "play beep <note>" block
+function noteHz(n){ n=parseFloat(n); if(!isFinite(n)) n=60; return Math.round(440*Math.pow(2,(n-69)/12)); }
+let GEN_SPEED={};   // per-port speed % set by "set motor speed" (stateful, like SPIKE)
+function pnum(v,d){ const n=parseFloat(v); return isFinite(n)?n:d; }
+function genBlock(b,ind){
+  const p=' '.repeat(ind); const t=b.type;
+  const P=(name)=>PORT_MAP[(fv(b,name)||'A').replace('+','_')]||('port.'+(fv(b,name)||'A'));
+  const sub=(name)=>{const i=b.getInput&&b.getInput(name); const c=i&&i.connection&&i.connection.targetBlock(); let s=''; let k=c; while(k){s+=genBlock(k,ind+4); k=k.getNextBlock&&k.getNextBlock();} return s||p+'    pass\n';};
+  switch(t){
+    case 'spk_when_start': case 'flipperevents_whenProgramStarts':
+    case 'spk_when_cond': case 'flipperevents_whenCondition': return '';
+    case 'spk_forever': case 'control_forever':
+      // trailing yield each loop — stops the tight re-command spin that makes
+      // sensor-driven motors twitch (and lets other parallel stacks run)
+      return p+'while True:\n'+sub('DO')+p+'    await runloop.sleep_ms(20)\n';
+    case 'spk_if': case 'control_if': return p+'if '+cond(b)+':\n'+sub('DO');
+    case 'spk_wait_until': case 'control_wait_until':
+      return p+'while not ('+cond(b)+'):\n'+p+'    await runloop.sleep_ms(10)\n';
+    case 'spk_repeat': case 'control_repeat': return p+'for _ in range('+(pnum(fv(b,'N'),1))+'):\n'+sub('DO');
+    case 'spk_motor_speed': case 'flippermotor_motorSetSpeed': {
+      const port=(fv(b,'PORT')||'A'); GEN_SPEED[port]=pnum(fv(b,'SPD'),50);
+      return p+'# set motor '+port+' speed to '+GEN_SPEED[port]+'%\n'; }
+    case 'spk_motor_start': case 'flippermotor_motorStartDirection': {
+      const port=(fv(b,'PORT')||'A'); const spd=GEN_SPEED[port]!=null?GEN_SPEED[port]:75;
+      const sign=fv(b,'DIR')==='ccw'?-1:1; return p+'motor.run('+P('PORT')+', '+(sign*spd*10)+')\n'; }
+    case 'spk_motor_stop': case 'flippermotor_motorStop': return p+'motor.stop('+P('PORT')+')\n';
+    case 'spk_motor_power': case 'flippermoremotor_motorStartPower':
+      return p+'motor.run('+P('PORT')+', '+(pnum(fv(b,'PW'),100)*10)+')\n';
+    case 'spk_motor_position': case 'flippermotor_motorGoDirectionToPosition':
+      return p+'await motor.run_to_absolute_position('+P('PORT')+', '+(pnum(fv(b,'POS'),0))+', 500)\n';
+    case 'spk_beep': case 'flippersound_beepForTime':
+      return p+'await sound.beep('+noteHz(fv(b,'NOTE'))+', '+Math.round(pnum(fv(b,'DUR'),0.2)*1000)+', 100)\n';
+    case 'spk_light': case 'flipperdisplay_ledImage': case 'flipperlight_lightDisplayImageOn':
+      return p+'light_matrix.show_image(light_matrix.IMAGE_HEART)\n';
+    default: { const lbl=fv(b,'TXT'); return p+'# '+(lbl||t)+'\n'; }
+  }
+}
+function cond(b){ const i=b.getInput&&b.getInput('C'); const c=i&&i.connection&&i.connection.targetBlock();
+  if(!c) return 'True';
+  const leaf=(x)=>{
+    if(x.type==='spk_is_color'||/iscolor/i.test(x.type)) return "color_sensor.color("+(PORT_MAP[fv(x,'PORT')||'F']||'port.F')+") == color."+String(fv(x,'COLOR')||'RED').toUpperCase();
+    if(x.type==='spk_is_pressed'||/ispressed|buttonispressed/i.test(x.type)) return (fv(x,'STATE')==='released'?'not ':'')+"force_sensor.pressed("+(PORT_MAP[fv(x,'PORT')||'D']||'port.D')+")";
+    if(x.type==='spk_or'||x.type==='spk_and'){ const op=x.type==='spk_and'?' and ':' or ';
+      const a=x.getInput('A'),bb=x.getInput('B');
+      const ca=a&&a.connection&&a.connection.targetBlock(), cb=bb&&bb.connection&&bb.connection.targetBlock();
+      return '('+(ca?leaf(ca):'True')+op+(cb?leaf(cb):'True')+')'; }
+    return 'True'; };
+  return leaf(c); }
+function generatePython(){
+  GEN_SPEED={};
+  let head='from hub import light_matrix, port, sound\nimport motor, color, color_sensor, force_sensor, runloop\n\n';
+  const tops=ws.getTopBlocks(true).filter(tb=>/spk_when_/.test(tb.type));
+  const others=ws.getTopBlocks(true).filter(tb=>!/spk_when_/.test(tb.type));
+  const funcs=[]; const names=[];
+  const emit=(top,i,label)=>{
+    // body indented to 8 (inside a try) so one stack failing on missing hardware
+    // (e.g. the Hand's motor A / button D) won't stop the others.
+    let body=''; let k=top; while(k){ body+=genBlock(k,8); k=k.getNextBlock&&k.getNextBlock(); }
+    const nm='stack'+i+(label?('_'+label.replace(/[^A-Za-z0-9]+/g,'_').toLowerCase()):'');
+    names.push(nm);
+    funcs.push('async def '+nm+'():'+(top.type==='spk_when_cond'?'  # when <condition>':'')+'\n'+
+               '    try:\n'+(body.trim()?body:'        pass\n')+
+               '    except Exception as e:\n        print("'+nm+' stopped:", e)\n');
+  };
+  tops.concat(others).forEach((tb,i)=>emit(tb,i,tb.getFieldValue&&tb.getFieldValue('LABEL')));
+  // SPIKE runs every hat stack CONCURRENTLY, each top-to-bottom
+  return head + funcs.join('\n') + '\n' +
+         'runloop.run(' + names.map(n=>n+'()').join(', ') + ')\n';
+}
+// ---------------------------------------------------------------------------
+// 6. Native SPIKE Bluetooth (Web Bluetooth, service fd02) — UUIDs taken from
+//    the decompiled SPIKE app: write->fd02-0001 (no response), notify->fd02-0002
+// ---------------------------------------------------------------------------
+const FD02_SVC='0000fd02-0000-1000-8000-00805f9b34fb';
+const FD02_TX ='0000fd02-0001-1000-8000-00805f9b34fb';   // app -> hub (write w/o response)
+const FD02_RX ='0000fd02-0002-1000-8000-00805f9b34fb';   // hub -> app (notify)
+let bleDevice=null, bleTx=null, bleRx=null, bleBuf='';
+async function bleConnect(){
+  if(!navigator.bluetooth){ setStatus('Web Bluetooth needs Chrome or Edge (and http://localhost, which this is).'); return; }
+  try{
+    setStatus('Pick your SPIKE hub in the chooser… (blink the hub BT button first)');
+    // Robust discovery: the hub may advertise a custom name and not the service
+    // UUID, so accept any device and reach fd02 via optionalServices after connect.
+    bleDevice=await navigator.bluetooth.requestDevice({
+      acceptAllDevices:true,
+      optionalServices:[FD02_SVC]
+    });
+    bleDevice.addEventListener('gattserverdisconnected',()=>{ bleTx=null; document.getElementById('btbtn').textContent='🔵 Connect BT'; setStatus('Hub disconnected (Bluetooth).'); });
+    setStatus('Connecting to '+(bleDevice.name||'device')+'…');
+    const server=await bleDevice.gatt.connect();
+    let svc;
+    try{ svc=await server.getPrimaryService(FD02_SVC); }
+    catch(e){ setStatus('That device has no SPIKE fd02 service — pick the hub (it must be advertising).'); try{server.disconnect();}catch(_){} return; }
+    bleTx=await svc.getCharacteristic(FD02_TX);
+    bleRx=await svc.getCharacteristic(FD02_RX);
+    await bleRx.startNotifications();
+    bleRx.addEventListener('characteristicvaluechanged',e=>{ bleBuf=(bleBuf+new TextDecoder().decode(e.target.value)).slice(-4000); });
+    document.getElementById('btbtn').textContent='🔵 BT: '+(bleDevice.name||'hub');
+    setStatus('✓ Connected to '+(bleDevice.name||'hub')+' over Bluetooth (native fd02). Upload/Beep now run wirelessly.');
+  }catch(e){ setStatus('Bluetooth connect failed: '+e.message+'  (hub ON + BT button blinking, not connected in the SPIKE app, USB unplugged).'); }
+}
+async function bleWrite(bytes){
+  // RELIABILITY FIX: write-without-response has no ack/flow-control, so larger
+  // programs lose packets over BLE and the pasted code arrives corrupted
+  // (SyntaxError -> "connects but nothing runs"). Prefer ACKNOWLEDGED writes
+  // (writeValueWithResponse) when the characteristic supports them; fall back to
+  // small chunks + pacing for without-response.
+  const canAck = bleTx.properties ? bleTx.properties.write : false;
+  const CH = canAck ? 240 : 20;
+  for(let i=0;i<bytes.length;i+=CH){
+    const slice=bytes.slice(i,i+CH);
+    try{
+      if(canAck && bleTx.writeValueWithResponse) await bleTx.writeValueWithResponse(slice);
+      else if(bleTx.writeValueWithoutResponse) await bleTx.writeValueWithoutResponse(slice);
+      else await bleTx.writeValue(slice);
+    }catch(e){ await bleTx.writeValue(slice); }
+    await new Promise(r=>setTimeout(r, canAck?4:18));   // acked writes need less pacing
+  }
+}
+// SPIKE's own method (from the decompiled app): write the program to a file in
+// base64 chunks via REPL exec — one small acknowledged line per chunk — then run
+// it. Far more reliable than paste mode (each chunk is confirmed, nothing drops).
+function _b64(str){ return btoa(unescape(encodeURIComponent(str))); }
+async function bleLine(s){
+  await bleWrite(new TextEncoder().encode(s+'\r\n'));
+  await new Promise(r=>setTimeout(r,30));
+}
+async function bleUpload(py){
+  bleBuf='';
+  await bleWrite(new Uint8Array([0x03])); await new Promise(r=>setTimeout(r,200));   // Ctrl-C: stop anything
+  await bleLine('import ubinascii');
+  await bleLine("f=open('/flash/_prog.py','wb')");
+  const data=_b64(py.replace(/\r/g,''));
+  for(let i=0;i<data.length;i+=200){                                                 // 200 = multiple of 4
+    await bleLine("f.write(ubinascii.a2b_base64('"+data.slice(i,i+200)+"'))");
+  }
+  await bleLine('f.close()');
+  await bleLine("exec(open('/flash/_prog.py').read())");                             // run it, SPIKE-style
+  await new Promise(r=>setTimeout(r,600));
+  return bleBuf;
+}
+// ⏹ Stop a running program — Ctrl-C over Bluetooth.
+async function stopHub(){
+  if(bleTx){ try{ await bleWrite(new Uint8Array([0x03])); await new Promise(r=>setTimeout(r,60)); await bleWrite(new Uint8Array([0x03]));
+      setStatus('⏹ Stop sent over Bluetooth — program halted.'); }catch(e){ setStatus('Stop error: '+e.message); } return; }
+  setStatus('Not connected — click 🔵 Connect BT first.');
+}
+// Safe wireless proof: beep + heart only, no motors — over the BLE connection.
+async function bleBeepTest(){
+  if(!bleTx){ setStatus('Not connected over Bluetooth yet — click 🔵 Connect BT first.'); return; }
+  const py='import runloop\n'+
+           'from hub import sound, light_matrix\n'+
+           'async def main():\n'+
+           '    light_matrix.show_image(light_matrix.IMAGE_HEART)\n'+
+           '    await sound.beep(440, 400, 100)\n'+
+           '    print("BT_BEEP_OK")\n'+
+           'runloop.run(main())\n';
+  document.getElementById('code').textContent=py;
+  setStatus('🔔 Sending beep over Bluetooth (fd02)…');
+  try{ const resp=await bleUpload(py);
+    setStatus(/BT_BEEP_OK/.test(resp) ? '✓ Beep + heart sent over Bluetooth — you should have heard/seen it! Wireless upload works.'
+      : (/Traceback|Error/.test(resp) ? ('BT beep ran with errors: '+resp.slice(-160)) : 'Sent over Bluetooth — check the hub for the beep/heart.'));
+  }catch(e){ setStatus('BT beep error: '+e.message); }
+}
+async function uploadToHub(){
+  const py=generatePython();
+  document.getElementById('code').textContent=py;
+  // Prefer Bluetooth if connected (native fd02) — otherwise USB via the server.
+  if(bleTx){
+    setStatus('Uploading over Bluetooth (fd02, no firmware flash)…');
+    try{ const resp=await bleUpload(py);
+      setStatus(/Traceback|Error/.test(resp)? ('BT ran with errors: '+resp.slice(-180)) : '✓ Sent over Bluetooth — program is running on the hub.');
+    }catch(e){ setStatus('Bluetooth upload error: '+e.message); }
+    return;
+  }
+  setStatus('⚠ No Bluetooth connection — click 🔵 Connect BT first (hub on, BT button blinking).');
+}
+window.addEventListener('load',()=>{
+  initLessons();
+  const q=new URLSearchParams(location.search);
+  const id=q.get('lesson')||q.get('p');
+  if(id){ loadLesson(id); }
+  else setStatus('Ready. Pick a camp lesson on the right.');
+});
+</script>
+</body>
+</html>
