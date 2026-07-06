@@ -520,9 +520,64 @@ function generatePython(){
 //    the decompiled SPIKE app: write->fd02-0001 (no response), notify->fd02-0002
 // ---------------------------------------------------------------------------
 const FD02_SVC='0000fd02-0000-1000-8000-00805f9b34fb';
-const FD02_TX ='0000fd02-0001-1000-8000-00805f9b34fb';   // app -> hub (write w/o response)
-const FD02_RX ='0000fd02-0002-1000-8000-00805f9b34fb';   // hub -> app (notify)
-let bleDevice=null, bleTx=null, bleRx=null, bleBuf='';
+const FD02_TX ='0000fd02-0001-1000-8000-00805f9b34fb';   // client -> hub (write w/o response)
+const FD02_RX ='0000fd02-0002-1000-8000-00805f9b34fb';   // hub -> client (notify)
+let bleDevice=null, bleTx=null, bleRx=null;
+let bleMaxPacket=100, bleMaxChunk=100;
+const BLE_SLOT=0;   // this editor has no slot picker; upload/run in slot 0
+
+// ---------------------------------------------------------------------------
+// SPIKE Prime fd02 protocol (COBS-framed binary — NOT a MicroPython REPL).
+// fd02 speaks LEGO's own message protocol: InfoRequest -> ClearSlot ->
+// StartFileUpload -> TransferChunk×N -> ProgramFlow(start). Ported from
+// https://lego.github.io/spike-prime-docs/ (examples/python cobs/crc/messages).
+// The old code wrote REPL bytes here, which the hub ignored — so BT never ran.
+// ---------------------------------------------------------------------------
+const _DELIM=0x02,_NODELIM=0xFF,_OFFSET=0x02,_MAXBLK=84,_XORV=3;
+function cobsEncode(data){const buf=[];let ci=0,block=0;const begin=()=>{ci=buf.length;buf.push(_NODELIM);block=1;};begin();
+  for(const b of data){if(b>_DELIM){buf.push(b);block++;}if(b<=_DELIM||block>_MAXBLK){if(b<=_DELIM)buf[ci]=b*_MAXBLK+block+_OFFSET;begin();}}buf[ci]=block+_OFFSET;return buf;}
+function cobsPack(data){const buf=cobsEncode(data);for(let i=0;i<buf.length;i++)buf[i]^=_XORV;buf.push(_DELIM);return Uint8Array.from(buf);}
+function cobsDecode(data){const out=[];const unescape=(code)=>{if(code===0xFF)return[null,_MAXBLK+1];let value=Math.floor((code-_OFFSET)/_MAXBLK),block=(code-_OFFSET)%_MAXBLK;if(block===0){block=_MAXBLK;value-=1;}return[value,block];};
+  let[value,block]=unescape(data[0]);for(let i=1;i<data.length;i++){const b=data[i];block--;if(block>0){out.push(b);continue;}if(value!==null)out.push(value);[value,block]=unescape(b);}return Uint8Array.from(out);}
+function cobsUnpack(frame){let s=0;if(frame[0]===0x01)s++;const inner=Array.from(frame.slice(s,frame.length-1),x=>x^_XORV);return cobsDecode(inner);}
+const _CRCT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(bytes,seed=0){let c=(seed^0xFFFFFFFF)>>>0;for(let i=0;i<bytes.length;i++)c=(_CRCT[(c^bytes[i])&0xFF]^(c>>>8))>>>0;return(c^0xFFFFFFFF)>>>0;}
+function crcAlign(bytes,seed=0,align=4){const rem=bytes.length%align;if(rem){const p=new Uint8Array(bytes.length+(align-rem));p.set(bytes);bytes=p;}return crc32(bytes,seed);}
+function msgInfoReq(){return new Uint8Array([0x00]);}
+function msgClearSlot(slot){return new Uint8Array([0x46,slot&0xFF]);}
+function msgStartUpload(name,slot,fileCrc){const enc=new TextEncoder().encode(name);const b=new Uint8Array(1+enc.length+1+1+4),dv=new DataView(b.buffer);let o=0;b[o++]=0x0C;b.set(enc,o);o+=enc.length;b[o++]=0;b[o++]=slot&0xFF;dv.setUint32(o,fileCrc>>>0,true);return b;}
+function msgTransferChunk(runningCrc,chunk){const b=new Uint8Array(1+4+2+chunk.length),dv=new DataView(b.buffer);let o=0;b[o++]=0x10;dv.setUint32(o,runningCrc>>>0,true);o+=4;dv.setUint16(o,chunk.length,true);o+=2;b.set(chunk,o);return b;}
+function msgProgramFlow(stop,slot){return new Uint8Array([0x1E,stop?1:0,slot&0xFF]);}
+
+let bleFrameBuf=[], blePending={id:-1,cb:null}, bleConsole='', bleProgEnded=false;
+function bleOnNotify(e){const v=new Uint8Array(e.target.value.buffer);
+  for(const byte of v){ bleFrameBuf.push(byte);
+    if(byte===_DELIM){ const frame=Uint8Array.from(bleFrameBuf); bleFrameBuf=[]; if(frame.length>1) bleHandleFrame(frame); } }}
+function bleHandleFrame(frame){let p;try{p=cobsUnpack(frame);}catch(_){return;}if(!p.length)return;const id=p[0];
+  if(id===0x21){let end=p.length;while(end>1&&p[end-1]===0)end--;bleConsole+=new TextDecoder().decode(p.slice(1,end));return;}
+  if(id===0x20){if(p[1]===1)bleProgEnded=true;return;}
+  if(id===blePending.id&&blePending.cb){const cb=blePending.cb;blePending={id:-1,cb:null};cb(p);}}
+async function bleSendFrame(msg){const frame=cobsPack(msg),sz=Math.min(bleMaxPacket||100,200);
+  for(let i=0;i<frame.length;i+=sz){const slice=frame.slice(i,i+sz);
+    if(bleTx.writeValueWithoutResponse)await bleTx.writeValueWithoutResponse(slice);else await bleTx.writeValue(slice);
+    if(frame.length>sz)await new Promise(r=>setTimeout(r,4));}}
+function bleRequest(msg,respId,timeout=5000){return new Promise((resolve,reject)=>{let done=false;
+  const to=setTimeout(()=>{if(!done){done=true;if(blePending.cb===cb)blePending={id:-1,cb:null};reject(new Error('BLE timeout (no 0x'+respId.toString(16)+' response)'));}},timeout);
+  const cb=(p)=>{if(done)return;done=true;clearTimeout(to);resolve(p);};blePending={id:respId,cb};
+  bleSendFrame(msg).catch(err=>{if(!done){done=true;clearTimeout(to);reject(err);}});});}
+async function bleUploadProgram(py,slot,run){const program=new TextEncoder().encode(py.replace(/\r/g,''));
+  bleConsole='';bleProgEnded=false;
+  try{await bleRequest(msgClearSlot(slot),0x47);}catch(_){}
+  const start=await bleRequest(msgStartUpload('program.py',slot,crcAlign(program)),0x0D);
+  if(start[1]!==0)throw new Error('hub rejected upload start (status '+start[1]+')');
+  let running=0;
+  for(let i=0;i<program.length;i+=bleMaxChunk){const chunk=program.slice(i,i+bleMaxChunk);running=crcAlign(chunk,running);
+    const r=await bleRequest(msgTransferChunk(running,chunk),0x11);
+    if(r[1]!==0)throw new Error('chunk transfer failed at byte '+i+' (status '+r[1]+')');}
+  if(run){const f=await bleRequest(msgProgramFlow(false,slot),0x1F);if(f[1]!==0)throw new Error('hub rejected program start (status '+f[1]+')');}
+  return true;}
+async function bleWaitConsole(re,ms){const deadline=Date.now()+ms;while(Date.now()<deadline){if(re.test(bleConsole)||bleProgEnded)break;await new Promise(r=>setTimeout(r,80));}return bleConsole;}
+
 async function bleConnect(){
   if(!navigator.bluetooth){ setStatus('Web Bluetooth needs Chrome or Edge (and http://localhost, which this is).'); return; }
   try{
@@ -533,7 +588,7 @@ async function bleConnect(){
       acceptAllDevices:true,
       optionalServices:[FD02_SVC]
     });
-    bleDevice.addEventListener('gattserverdisconnected',()=>{ bleTx=null; document.getElementById('btbtn').textContent='🔵 Connect BT'; setStatus('Hub disconnected (Bluetooth).'); });
+    bleDevice.addEventListener('gattserverdisconnected',()=>{ bleTx=null; bleFrameBuf=[]; blePending={id:-1,cb:null}; document.getElementById('btbtn').textContent='🔵 Connect BT'; setStatus('Hub disconnected (Bluetooth).'); });
     setStatus('Connecting to '+(bleDevice.name||'device')+'…');
     const server=await bleDevice.gatt.connect();
     let svc;
@@ -541,55 +596,26 @@ async function bleConnect(){
     catch(e){ setStatus('That device has no SPIKE fd02 service — pick the hub (it must be advertising).'); try{server.disconnect();}catch(_){} return; }
     bleTx=await svc.getCharacteristic(FD02_TX);
     bleRx=await svc.getCharacteristic(FD02_RX);
+    bleFrameBuf=[]; blePending={id:-1,cb:null};
     await bleRx.startNotifications();
-    bleRx.addEventListener('characteristicvaluechanged',e=>{ bleBuf=(bleBuf+new TextDecoder().decode(e.target.value)).slice(-4000); });
+    bleRx.addEventListener('characteristicvaluechanged', bleOnNotify);
+    setStatus('Connected — negotiating protocol (InfoRequest)…');
+    try{
+      const info=await bleRequest(msgInfoReq(), 0x01, 5000);
+      if(info.length>=15){ const dv=new DataView(info.buffer);
+        bleMaxPacket=Math.min(Math.max(dv.getUint16(9,true)||100,20),512);
+        bleMaxChunk =Math.min(Math.max(dv.getUint16(13,true)||100,20),512); }
+    }catch(e){
+      bleTx=null; try{server.disconnect();}catch(_){}
+      setStatus('Connected but the hub did not answer InfoRequest — wrong firmware/protocol? ('+e.message+')'); return;
+    }
     document.getElementById('btbtn').textContent='🔵 BT: '+(bleDevice.name||'hub');
-    setStatus('✓ Connected to '+(bleDevice.name||'hub')+' over Bluetooth (native fd02). Upload/Beep now run wirelessly.');
+    setStatus('✓ Connected to '+(bleDevice.name||'hub')+' over Bluetooth (fd02, packet '+bleMaxPacket+'/chunk '+bleMaxChunk+'). Upload/Beep now run wirelessly.');
   }catch(e){ setStatus('Bluetooth connect failed: '+e.message+'  (hub ON + BT button blinking, not connected in the SPIKE app, USB unplugged).'); }
 }
-async function bleWrite(bytes){
-  // RELIABILITY FIX: write-without-response has no ack/flow-control, so larger
-  // programs lose packets over BLE and the pasted code arrives corrupted
-  // (SyntaxError -> "connects but nothing runs"). Prefer ACKNOWLEDGED writes
-  // (writeValueWithResponse) when the characteristic supports them; fall back to
-  // small chunks + pacing for without-response.
-  const canAck = bleTx.properties ? bleTx.properties.write : false;
-  const CH = canAck ? 240 : 20;
-  for(let i=0;i<bytes.length;i+=CH){
-    const slice=bytes.slice(i,i+CH);
-    try{
-      if(canAck && bleTx.writeValueWithResponse) await bleTx.writeValueWithResponse(slice);
-      else if(bleTx.writeValueWithoutResponse) await bleTx.writeValueWithoutResponse(slice);
-      else await bleTx.writeValue(slice);
-    }catch(e){ await bleTx.writeValue(slice); }
-    await new Promise(r=>setTimeout(r, canAck?4:18));   // acked writes need less pacing
-  }
-}
-// SPIKE's own method (from the decompiled app): write the program to a file in
-// base64 chunks via REPL exec — one small acknowledged line per chunk — then run
-// it. Far more reliable than paste mode (each chunk is confirmed, nothing drops).
-function _b64(str){ return btoa(unescape(encodeURIComponent(str))); }
-async function bleLine(s){
-  await bleWrite(new TextEncoder().encode(s+'\r\n'));
-  await new Promise(r=>setTimeout(r,30));
-}
-async function bleUpload(py){
-  bleBuf='';
-  await bleWrite(new Uint8Array([0x03])); await new Promise(r=>setTimeout(r,200));   // Ctrl-C: stop anything
-  await bleLine('import ubinascii');
-  await bleLine("f=open('/flash/_prog.py','wb')");
-  const data=_b64(py.replace(/\r/g,''));
-  for(let i=0;i<data.length;i+=200){                                                 // 200 = multiple of 4
-    await bleLine("f.write(ubinascii.a2b_base64('"+data.slice(i,i+200)+"'))");
-  }
-  await bleLine('f.close()');
-  await bleLine("exec(open('/flash/_prog.py').read())");                             // run it, SPIKE-style
-  await new Promise(r=>setTimeout(r,600));
-  return bleBuf;
-}
-// ⏹ Stop a running program — Ctrl-C over Bluetooth.
+// ⏹ Stop a running program — ProgramFlow(stop) over Bluetooth.
 async function stopHub(){
-  if(bleTx){ try{ await bleWrite(new Uint8Array([0x03])); await new Promise(r=>setTimeout(r,60)); await bleWrite(new Uint8Array([0x03]));
+  if(bleTx){ try{ await bleRequest(msgProgramFlow(true, BLE_SLOT), 0x1F);
       setStatus('⏹ Stop sent over Bluetooth — program halted.'); }catch(e){ setStatus('Stop error: '+e.message); } return; }
   setStatus('Not connected — click 🔵 Connect BT first.');
 }
@@ -605,9 +631,10 @@ async function bleBeepTest(){
            'runloop.run(main())\n';
   document.getElementById('code').textContent=py;
   setStatus('🔔 Sending beep over Bluetooth (fd02)…');
-  try{ const resp=await bleUpload(py);
+  try{ await bleUploadProgram(py, BLE_SLOT, true);
+    const resp=await bleWaitConsole(/BT_BEEP_OK/, 4000);
     setStatus(/BT_BEEP_OK/.test(resp) ? '✓ Beep + heart sent over Bluetooth — you should have heard/seen it! Wireless upload works.'
-      : (/Traceback|Error/.test(resp) ? ('BT beep ran with errors: '+resp.slice(-160)) : 'Sent over Bluetooth — check the hub for the beep/heart.'));
+      : (/Traceback|Error/.test(resp) ? ('BT beep ran with errors: '+resp.slice(-160)) : 'Sent over Bluetooth (slot '+BLE_SLOT+') — check the hub for the beep/heart.'));
   }catch(e){ setStatus('BT beep error: '+e.message); }
 }
 async function uploadToHub(){
@@ -615,9 +642,10 @@ async function uploadToHub(){
   document.getElementById('code').textContent=py;
   // Prefer Bluetooth if connected (native fd02) — otherwise USB via the server.
   if(bleTx){
-    setStatus('Uploading over Bluetooth (fd02, no firmware flash)…');
-    try{ const resp=await bleUpload(py);
-      setStatus(/Traceback|Error/.test(resp)? ('BT ran with errors: '+resp.slice(-180)) : '✓ Sent over Bluetooth — program is running on the hub.');
+    setStatus('Uploading over Bluetooth (fd02, slot '+BLE_SLOT+', no firmware flash)…');
+    try{ await bleUploadProgram(py, BLE_SLOT, true);
+      const resp=await bleWaitConsole(/Traceback|Error/, 1200);
+      setStatus(/Traceback|Error/.test(resp)? ('BT ran with errors: '+resp.slice(-180)) : '✓ Sent over Bluetooth (slot '+BLE_SLOT+') — program is running on the hub.');
     }catch(e){ setStatus('Bluetooth upload error: '+e.message); }
     return;
   }
