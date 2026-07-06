@@ -7,6 +7,8 @@
 <script src="../blockly/blocks_compressed.js"></script>
 <script src="../blockly/msg/en.js"></script>
 <script src="../spike_blocks_full.js"></script>
+<script src="../jszip.min.js"></script>
+<script src="../llsp3_client.js"></script>
 <style>
   :root{
     --spike-bg:#ffffff; --spike-canvas:#f7f8fa; --spike-ink:#2b3a4a;
@@ -67,6 +69,11 @@
   <div id="side">
     <h3>Camp lessons</h3>
     <div id="lessons" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+    <h3>Your own program</h3>
+    <input type="file" id="file" accept=".llsp3,.llsp" style="display:none">
+    <div class="drop" id="drop" onclick="document.getElementById('file').click()">
+      Drop a <b>SPIKE project (.llsp3)</b> here — or click to browse. It rebuilds into blocks right in your browser.
+    </div>
     <div id="status">Ready.</div>
     <h3 id="codehdr">Detected program</h3>
     <pre id="code"></pre>
@@ -406,6 +413,32 @@ function initLessons(){
     box.appendChild(b);
   });
 }
+
+// --- client-side .llsp3 drag-and-drop: rebuild a SPIKE project into blocks, no server ---
+async function handleLlsp3(file){
+  if(!/\.llsp3?$/i.test(file.name)){ setStatus('Please drop a .llsp3 SPIKE project file.'); return; }
+  setStatus('Reading '+file.name+' …');
+  try{
+    const buf=await file.arrayBuffer();
+    const data=await parseLlsp3(buf);
+    currentLesson=null;
+    document.getElementById('progname').textContent='▶ '+data.name;
+    document.querySelectorAll('#lessons button').forEach(b=>b.classList.remove('sel'));
+    const blocks=data.stacks.flat();
+    if(!blocks.length){ setStatus('No blocks found in '+file.name+'.'); return; }
+    setStatus('Dragging in '+blocks.length+' blocks from '+file.name+' …');
+    await buildProgram(blocks);
+  }catch(e){ setStatus('Could not read that file: '+e.message); }
+}
+(function(){
+  const inp=document.getElementById('file'), drop=document.getElementById('drop');
+  if(inp) inp.addEventListener('change',e=>{ if(e.target.files[0]) handleLlsp3(e.target.files[0]); });
+  if(drop){
+    ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag');}));
+    drop.addEventListener('drop',e=>{ if(e.dataTransfer.files[0]) handleLlsp3(e.dataTransfer.files[0]); });
+  }
+})();
 
 // ---------------------------------------------------------------------------
 // 5. Generate SPIKE MicroPython from the workspace and RUN it on the hub
