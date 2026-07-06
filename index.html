@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SPIKE PRIME+ — Camp Editor & Notes</title>
+<title>Mission Impossible — Kavosh U15 Camp</title>
 <script>
 // Back-compat: the camp notes PDF links to /spike-camp/?lesson=<id>.
 // The editor now lives in /editor/ — forward those visits untouched.
@@ -15,7 +15,9 @@
 <style>
   :root{
     --bg:#f7f8fa; --ink:#2b3a4a; --teal:#00a3c7; --teal-d:#0089a8;
+    --red:#c00000; --red-d:#9c0000;
     --line:#e6eaf0; --panel:#ffffff; --muted:#8a9bb0;
+    --med:#1f9d57; --hard:#c00000; --medhard:#d98315;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:'Segoe UI',system-ui,'Helvetica Neue',Arial,sans-serif;
@@ -24,85 +26,180 @@
          box-shadow:0 1px 4px rgba(30,40,60,.06);padding:14px 24px;
          display:flex;align-items:center;gap:12px}
   header .logo{width:34px;height:34px;border-radius:9px;font-size:18px;
-         background:linear-gradient(135deg,#00c2e8,#0089a8);display:flex;
-         align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,140,170,.35)}
+         background:linear-gradient(135deg,#e23b3b,#9c0000);display:flex;
+         align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(150,0,0,.35)}
   header h1{font-size:16px;margin:0;font-weight:700;color:#33475b}
   header h1 small{font-weight:500;color:var(--muted)}
-  .hero{text-align:center;padding:56px 20px 30px}
-  .hero h2{font-size:44px;margin:0;letter-spacing:.5px;color:#22313f}
-  .hero h2 .plus{color:var(--teal)}
-  .hero p{color:#5a6b7e;font-size:17px;max-width:640px;margin:14px auto 0;line-height:1.55}
-  .cards{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;padding:26px 20px 8px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;
-        width:340px;padding:26px;text-decoration:none;color:var(--ink);
+
+  .hero{text-align:center;padding:54px 20px 26px}
+  .hero .eyebrow{font-size:12.5px;letter-spacing:2.5px;font-weight:800;color:var(--red);
+         text-transform:uppercase;margin:0 0 10px}
+  .hero h2{font-size:46px;margin:0;letter-spacing:1px;color:#22313f;line-height:1.02;font-weight:800}
+  .hero p{color:#5a6b7e;font-size:17px;max-width:660px;margin:16px auto 0;line-height:1.55}
+  .hero .tag{display:inline-block;margin-top:18px;background:#fdeeee;color:var(--red-d);
+         border:1px solid #f4d0d0;border-radius:22px;padding:8px 18px;font-size:13.5px;font-weight:600}
+
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  .day{margin:40px auto 8px}
+  .day-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+         border-bottom:2px solid var(--red);padding-bottom:10px;margin-bottom:20px}
+  .day-head .num{font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+         background:var(--red);color:#fff;border-radius:6px;padding:4px 11px}
+  .day-head h3{font-size:24px;margin:0;color:#22313f;font-weight:800}
+  .day-head .sub{color:var(--muted);font-size:14px;margin-left:auto}
+  .day-head .sub a{color:var(--teal-d);font-weight:700;text-decoration:none}
+  .day-head .sub a:hover{text-decoration:underline}
+
+  .missions{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+  .m{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 20px 18px;
+     box-shadow:0 2px 10px rgba(30,40,60,.05);display:flex;flex-direction:column}
+  .m .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+  .m .kind{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+  .m .badge{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+     color:#fff;border-radius:20px;padding:3px 10px;white-space:nowrap}
+  .b-med{background:var(--med)} .b-hard{background:var(--hard)} .b-medhard{background:var(--medhard)}
+  .m h4{margin:0 0 8px;font-size:20px;color:#22313f;font-weight:800}
+  .m .story{color:#5a6b7e;font-size:14px;line-height:1.55;margin:0 0 14px;flex:1}
+  .m .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;
+     border-top:1px solid var(--line);padding-top:12px;font-size:13px}
+  .m .skill{color:#33475b;font-weight:600}
+  .m .pts{color:var(--red-d);font-weight:800;white-space:nowrap}
+  .m.hands{background:#f5fbfb;border-color:#d5eef2}
+  .m.hands .pts{color:var(--teal-d)}
+  .m.hands .badge.b-hard{background:var(--teal-d)}
+
+  .tools{margin:46px auto 10px}
+  .tools h4{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--teal-d);
+     margin:0 0 14px;font-weight:800}
+  .cards{display:flex;gap:18px;flex-wrap:wrap}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+        flex:1 1 300px;padding:22px;text-decoration:none;color:var(--ink);
         box-shadow:0 2px 10px rgba(30,40,60,.06);transition:transform .12s,box-shadow .12s}
   .card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(0,140,170,.18)}
-  .card .ico{font-size:34px}
-  .card h3{margin:12px 0 6px;font-size:19px;color:#22313f}
-  .card p{margin:0;color:#5a6b7e;font-size:14px;line-height:1.5}
-  .card .go{display:inline-block;margin-top:14px;background:var(--teal);color:#fff;
-        border-radius:20px;padding:8px 18px;font-weight:700;font-size:13px}
-  .lessons{max-width:860px;margin:34px auto 60px;padding:0 20px}
-  .lessons h4{font-size:13px;text-transform:uppercase;letter-spacing:.8px;
-        color:var(--teal-d);margin:0 0 12px;font-weight:800}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
-  .grid a{background:var(--panel);border:1px solid var(--line);border-radius:10px;
-        padding:11px 14px;text-decoration:none;color:#33475b;font-size:14px;font-weight:600;
-        transition:background .1s,border-color .1s}
-  .grid a:hover{background:#e6f7fb;border-color:var(--teal)}
-  .grid a small{display:block;color:var(--muted);font-weight:500;font-size:11.5px;margin-top:2px}
-  footer{text-align:center;color:var(--muted);font-size:12.5px;padding:24px;border-top:1px solid var(--line)}
+  .card .ico{font-size:30px}
+  .card h5{margin:10px 0 5px;font-size:18px;color:#22313f}
+  .card p{margin:0;color:#5a6b7e;font-size:13.5px;line-height:1.5}
+  .card .go{display:inline-block;margin-top:12px;background:var(--teal);color:#fff;
+        border-radius:20px;padding:7px 16px;font-weight:700;font-size:12.5px}
+
+  footer{text-align:center;color:var(--muted);font-size:12.5px;padding:30px 20px;
+     border-top:1px solid var(--line);margin-top:44px}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo">🧩</div>
-  <h1>SPIKE PRIME+ <small>· Kavosh AI &amp; Robotics Academy</small></h1>
+  <div class="logo">🎯</div>
+  <h1>Mission Impossible <small>· Kavosh AI &amp; Robotics Academy · U15 Camp</small></h1>
 </header>
 
 <div class="hero">
-  <h2>SPIKE PRIME<span class="plus">+</span></h2>
-  <p>Our camp's own take on SPIKE Prime: a browser block editor that rebuilds every
-     lesson's program in front of you, uploads to a real hub over Bluetooth, and a
-     full 11-session instructor lesson plan — from a Rock-Paper-Scissors hub to
-     PID line followers and battle robots.</p>
+  <p class="eyebrow">Kavosh Robotics · U15 Training Camp</p>
+  <h2>MISSION IMPOSSIBLE</h2>
+  <p>Two days. Six missions. Nobody knows the exact challenge until your coach reveals it —
+     just like a real competition. Each day you solve two robot missions and one hands-on
+     mission, using SPIKE robots, sensors, and pure teamwork.</p>
+  <span class="tag">🤖 2 robot missions + 🛠️ 1 hands-on mission each day</span>
 </div>
 
-<div class="cards">
-  <a class="card" href="editor/">
-    <div class="ico">🧱</div>
-    <h3>Block Editor</h3>
-    <p>Watch any camp program drag itself in block by block, remix it, see it as
-       Python, and run it on a SPIKE hub over Bluetooth — no app install.</p>
-    <span class="go">Open the editor →</span>
-  </a>
-  <a class="card" href="notes/SPIKE_Camp_Lesson_Plan.pdf">
-    <div class="ico">📓</div>
-    <h3>Camp Notes</h3>
-    <p>The complete instructor lesson plan: 11 sessions, one machine each, with
-       code walkthroughs, guided questions, challenges, and the control-theory
-       thread that ends in PID.</p>
-    <span class="go">Read the notes (PDF) →</span>
-  </a>
+<div class="wrap">
+
+  <!-- ===================== DAY 1 ===================== -->
+  <section class="day">
+    <div class="day-head">
+      <span class="num">Day 1</span>
+      <h3>Find the Way</h3>
+      <span class="sub">Coach's plan: Supply Drop → Lifeline → The Long Corridor ·
+        <a href="notes/Day1_Mission_Impossible_Training_Pack.pdf">Training pack (PDF) →</a></span>
+    </div>
+    <div class="missions">
+
+      <div class="m">
+        <div class="top"><span class="kind">🤖 Robot Mission 1</span><span class="badge b-med">Medium</span></div>
+        <h4>Supply Drop</h4>
+        <p class="story">A village is cut off after the earthquake. Cross the broken field, find the
+          hidden Pharmacy tile using only counted tiles, and drop off a rescue pack.</p>
+        <div class="foot"><span class="skill">Tile-counting navigation</span><span class="pts">100 pts</span></div>
+      </div>
+
+      <div class="m">
+        <div class="top"><span class="kind">🤖 Robot Mission 2</span><span class="badge b-hard">Hard</span></div>
+        <h4>The Long Corridor</h4>
+        <p class="story">The rescue tunnel is blocked by rubble. Follow the line, sense the obstacle,
+          stop, sidestep around it, find the line again, then gyro-turn the corner to the exit.</p>
+        <div class="foot"><span class="skill">Obstacle stop + sidestep + gyro turn</span><span class="pts">100 pts</span></div>
+      </div>
+
+      <div class="m hands">
+        <div class="top"><span class="kind">🛠️ Hands-on · No Robot</span><span class="badge b-hard">Medium-Hard</span></div>
+        <h4>Lifeline</h4>
+        <p class="story">A medicine capsule must ride a rope across the danger zone and drop into a hole.
+          Build a carrier from a cup, string and tape — no throwing, no stepping in.</p>
+        <div class="foot"><span class="skill">Simple mechanisms &amp; teamwork</span><span class="pts">90 pts</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== DAY 2 ===================== -->
+  <section class="day">
+    <div class="day-head">
+      <span class="num">Day 2</span>
+      <h3>Decide on the Move</h3>
+      <span class="sub">Coach's plan: Secret Orders → The Crane Gang → The Scanner ·
+        <a href="notes/Day2_Mission_Impossible_Training_Pack.pdf">Training pack (PDF) →</a></span>
+    </div>
+    <div class="missions">
+
+      <div class="m">
+        <div class="top"><span class="kind">🤖 Robot Mission 1</span><span class="badge b-medhard">Hard-Medium</span></div>
+        <h4>Secret Orders</h4>
+        <p class="story">Coded colour markers line your patrol route. Green = keep going, Yellow = stop &amp;
+          beep, Red = back up. Obey each order the instant you see it — you find out live.</p>
+        <div class="foot"><span class="skill">React to signals while moving</span><span class="pts">110 pts</span></div>
+      </div>
+
+      <div class="m">
+        <div class="top"><span class="kind">🤖 Robot Mission 2</span><span class="badge b-hard">Hard</span></div>
+        <h4>The Scanner</h4>
+        <p class="story">Survivors line both sides of the corridor. Sense left and right at once, remember
+          how many on each side, then park in the bay for whichever side had more.</p>
+        <div class="foot"><span class="skill">Two-sided sensing + remember &amp; decide</span><span class="pts">100 pts</span></div>
+      </div>
+
+      <div class="m hands">
+        <div class="top"><span class="kind">🛠️ Hands-on · No Robot</span><span class="badge b-hard">Hard</span></div>
+        <h4>The Crane Gang</h4>
+        <p class="story">A medicine container sits in the contamination zone. Build a rig to grip and lift it,
+          carry it together to the Clean Zone — nobody touches it, and obey the surprise rule.</p>
+        <div class="foot"><span class="skill">Teamwork under a surprise rule</span><span class="pts">100 pts</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== TOOLS ===================== -->
+  <section class="tools">
+    <h4>Camp coding tools</h4>
+    <div class="cards">
+      <a class="card" href="editor/">
+        <div class="ico">🧱</div>
+        <h5>SPIKE Block Editor</h5>
+        <p>Build robot programs in the browser, see them as Python, and run them on a real SPIKE
+           hub over Bluetooth — no app install. Drop your own <code>.llsp3</code> to rebuild it block by block.</p>
+        <span class="go">Open the editor →</span>
+      </a>
+      <a class="card" href="notes/SPIKE_Camp_Lesson_Plan.pdf">
+        <div class="ico">📓</div>
+        <h5>SPIKE Lesson Plan</h5>
+        <p>The full instructor lesson plan — 11 build-a-machine sessions with code walkthroughs and
+           the control-theory thread that ends in PID line following.</p>
+        <span class="go">Read the notes (PDF) →</span>
+      </a>
+    </div>
+  </section>
+
 </div>
 
-<div class="lessons">
-  <h4>Jump straight to a lesson's code</h4>
-  <div class="grid">
-    <a href="editor/?lesson=rock_paper_scissors">1 · Rock Paper Scissors<small>events · random · My Blocks</small></a>
-    <a href="editor/?lesson=guitar">2 · Guitar<small>condition hats · parallel stacks</small></a>
-    <a href="editor/?lesson=music_maker">3 · Music Maker<small>programs-as-data · tempo</small></a>
-    <a href="editor/?lesson=bird">4 · Bird<small>distance events · motor sync</small></a>
-    <a href="editor/?lesson=barrier_gate">5 · Barrier Gate<small>if/else protocols · hysteresis</small></a>
-    <a href="editor/?lesson=robot_arm_1">6 · Robot Arm I<small>teleoperation · concurrency</small></a>
-    <a href="editor/?lesson=robot_arm_2">7 · Robot Arm II<small>IMU tilt · deadband</small></a>
-    <a href="editor/?lesson=domino">8 · Domino Machine<small>dead reckoning · calibration</small></a>
-    <a href="editor/?lesson=color_image">9 · Line Follower<small>bang-bang → P → PID</small></a>
-    <a href="editor/?lesson=sumo">10 · Sumo Bot<small>state machines · strategy</small></a>
-    <a href="editor/?lesson=simon_says">11 · Simon Says<small>lists · broadcasts · debugging</small></a>
-  </div>
-</div>
-
-<footer>SPIKE PRIME+ · built for the Kavosh robotics camp · programs decompiled from the original project files</footer>
+<footer>Kavosh AI &amp; Robotics Academy · U15 Mission Impossible Camp · missions revealed live by your coach</footer>
 </body>
 </html>
