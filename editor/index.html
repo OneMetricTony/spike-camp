@@ -524,6 +524,7 @@ const FD02_TX ='0000fd02-0001-1000-8000-00805f9b34fb';   // client -> hub (write
 const FD02_RX ='0000fd02-0002-1000-8000-00805f9b34fb';   // hub -> client (notify)
 let bleDevice=null, bleTx=null, bleRx=null;
 let bleMaxPacket=100, bleMaxChunk=100;
+let bleBusy=false, bleReconnecting=false, bleShouldReconnect=true;
 const BLE_SLOT=0;   // this editor has no slot picker; upload/run in slot 0
 
 // ---------------------------------------------------------------------------
@@ -565,18 +566,63 @@ function bleRequest(msg,respId,timeout=5000){return new Promise((resolve,reject)
   const to=setTimeout(()=>{if(!done){done=true;if(blePending.cb===cb)blePending={id:-1,cb:null};reject(new Error('BLE timeout (no 0x'+respId.toString(16)+' response)'));}},timeout);
   const cb=(p)=>{if(done)return;done=true;clearTimeout(to);resolve(p);};blePending={id:respId,cb};
   bleSendFrame(msg).catch(err=>{if(!done){done=true;clearTimeout(to);reject(err);}});});}
-async function bleUploadProgram(py,slot,run){const program=new TextEncoder().encode(py.replace(/\r/g,''));
-  bleConsole='';bleProgEnded=false;
-  try{await bleRequest(msgClearSlot(slot),0x47);}catch(_){}
-  const start=await bleRequest(msgStartUpload('program.py',slot,crcAlign(program)),0x0D);
-  if(start[1]!==0)throw new Error('hub rejected upload start (status '+start[1]+')');
-  let running=0;
-  for(let i=0;i<program.length;i+=bleMaxChunk){const chunk=program.slice(i,i+bleMaxChunk);running=crcAlign(chunk,running);
-    const r=await bleRequest(msgTransferChunk(running,chunk),0x11);
-    if(r[1]!==0)throw new Error('chunk transfer failed at byte '+i+' (status '+r[1]+')');}
-  if(run){const f=await bleRequest(msgProgramFlow(false,slot),0x1F);if(f[1]!==0)throw new Error('hub rejected program start (status '+f[1]+')');}
-  return true;}
+// Busy-guarded so rapid clicks can't interleave two uploads (which desyncs the
+// protocol and drops the BLE link). onProgress(0..1) is called per chunk.
+async function bleUploadProgram(py,slot,run,onProgress){
+  if(bleBusy)throw new Error('busy — an upload is already in progress');
+  bleBusy=true;
+  try{
+    const program=new TextEncoder().encode(py.replace(/\r/g,''));
+    bleConsole='';bleProgEnded=false;
+    try{await bleRequest(msgClearSlot(slot),0x47);}catch(_){}
+    const start=await bleRequest(msgStartUpload('program.py',slot,crcAlign(program)),0x0D);
+    if(start[1]!==0)throw new Error('hub rejected upload start (status '+start[1]+')');
+    let running=0;
+    for(let i=0;i<program.length;i+=bleMaxChunk){const chunk=program.slice(i,i+bleMaxChunk);running=crcAlign(chunk,running);
+      const r=await bleRequest(msgTransferChunk(running,chunk),0x11);
+      if(r[1]!==0)throw new Error('chunk transfer failed at byte '+i+' (status '+r[1]+')');
+      if(onProgress)onProgress(Math.min(1,(i+chunk.length)/(program.length||1)));}
+    if(run){const f=await bleRequest(msgProgramFlow(false,slot),0x1F);if(f[1]!==0)throw new Error('hub rejected program start (status '+f[1]+')');}
+    return true;
+  }finally{ bleBusy=false; }
+}
 async function bleWaitConsole(re,ms){const deadline=Date.now()+ms;while(Date.now()<deadline){if(re.test(bleConsole)||bleProgEnded)break;await new Promise(r=>setTimeout(r,80));}return bleConsole;}
+function bleBar(p){const n=18,f=Math.round(p*n);return '█'.repeat(f)+'░'.repeat(n-f)+' '+Math.round(p*100)+'%';}
+// Shared GATT setup — used by both first connect and auto-reconnect.
+async function bleSetupServer(server){
+  const svc=await server.getPrimaryService(FD02_SVC);
+  const tx=await svc.getCharacteristic(FD02_TX);
+  const rx=await svc.getCharacteristic(FD02_RX);
+  bleFrameBuf=[]; blePending={id:-1,cb:null};
+  await rx.startNotifications();
+  rx.addEventListener('characteristicvaluechanged', bleOnNotify);
+  bleTx=tx; bleRx=rx;                       // set before handshake so bleRequest can write
+  try{
+    const info=await bleRequest(msgInfoReq(),0x01,5000);
+    if(info.length>=15){const dv=new DataView(info.buffer);
+      bleMaxPacket=Math.min(Math.max(dv.getUint16(9,true)||100,20),512);
+      bleMaxChunk =Math.min(Math.max(dv.getUint16(13,true)||100,20),512);}
+  }catch(e){ bleTx=null; bleRx=null; throw e; }
+  document.getElementById('btbtn').textContent='🔵 BT: '+(bleDevice.name||'hub');
+}
+// Auto-reconnect to the same hub after an unexpected drop (no re-pick needed —
+// the device is already permitted, so gatt.connect() works without a gesture).
+async function bleTryReconnect(){
+  if(!bleDevice||bleReconnecting||!bleShouldReconnect)return;
+  bleReconnecting=true;
+  for(let i=0;i<6 && bleShouldReconnect && !bleTx;i++){
+    try{
+      setStatus('🔄 Auto-reconnecting to '+(bleDevice.name||'hub')+'… ('+(i+1)+'/6)');
+      const server=await bleDevice.gatt.connect();
+      await bleSetupServer(server);
+      setStatus('✓ Reconnected over Bluetooth ('+(bleDevice.name||'hub')+').');
+      bleReconnecting=false; return true;
+    }catch(e){ await new Promise(r=>setTimeout(r,1500)); }
+  }
+  bleReconnecting=false;
+  if(!bleTx)setStatus('⚠ Auto-reconnect failed — click 🔵 Connect BT (blink the hub BT button; one connection at a time).');
+  return false;
+}
 
 async function bleConnect(){
   if(!navigator.bluetooth){ setStatus('Web Bluetooth needs Chrome or Edge (and http://localhost, which this is).'); return; }
@@ -588,28 +634,12 @@ async function bleConnect(){
       acceptAllDevices:true,
       optionalServices:[FD02_SVC]
     });
-    bleDevice.addEventListener('gattserverdisconnected',()=>{ bleTx=null; bleFrameBuf=[]; blePending={id:-1,cb:null}; document.getElementById('btbtn').textContent='🔵 Connect BT'; setStatus('Hub disconnected (Bluetooth).'); });
+    bleShouldReconnect=true;
+    bleDevice.addEventListener('gattserverdisconnected',()=>{ bleTx=null; bleRx=null; bleFrameBuf=[]; blePending={id:-1,cb:null}; document.getElementById('btbtn').textContent='🔵 Connect BT'; setStatus('Hub disconnected — auto-reconnecting…'); bleTryReconnect(); });
     setStatus('Connecting to '+(bleDevice.name||'device')+'…');
     const server=await bleDevice.gatt.connect();
-    let svc;
-    try{ svc=await server.getPrimaryService(FD02_SVC); }
-    catch(e){ setStatus('That device has no SPIKE fd02 service — pick the hub (it must be advertising).'); try{server.disconnect();}catch(_){} return; }
-    bleTx=await svc.getCharacteristic(FD02_TX);
-    bleRx=await svc.getCharacteristic(FD02_RX);
-    bleFrameBuf=[]; blePending={id:-1,cb:null};
-    await bleRx.startNotifications();
-    bleRx.addEventListener('characteristicvaluechanged', bleOnNotify);
-    setStatus('Connected — negotiating protocol (InfoRequest)…');
-    try{
-      const info=await bleRequest(msgInfoReq(), 0x01, 5000);
-      if(info.length>=15){ const dv=new DataView(info.buffer);
-        bleMaxPacket=Math.min(Math.max(dv.getUint16(9,true)||100,20),512);
-        bleMaxChunk =Math.min(Math.max(dv.getUint16(13,true)||100,20),512); }
-    }catch(e){
-      bleTx=null; try{server.disconnect();}catch(_){}
-      setStatus('Connected but the hub did not answer InfoRequest — wrong firmware/protocol? ('+e.message+')'); return;
-    }
-    document.getElementById('btbtn').textContent='🔵 BT: '+(bleDevice.name||'hub');
+    try{ await bleSetupServer(server); }
+    catch(e){ setStatus('Connected but handshake failed — is this a SPIKE hub, advertising? ('+e.message+')'); try{server.disconnect();}catch(_){} return; }
     setStatus('✓ Connected to '+(bleDevice.name||'hub')+' over Bluetooth (fd02, packet '+bleMaxPacket+'/chunk '+bleMaxChunk+'). Upload/Beep now run wirelessly.');
   }catch(e){ setStatus('Bluetooth connect failed: '+e.message+'  (hub ON + BT button blinking, not connected in the SPIKE app, USB unplugged).'); }
 }
@@ -629,9 +659,10 @@ async function bleBeepTest(){
            '    await sound.beep(440, 400, 100)\n'+
            '    print("BT_BEEP_OK")\n'+
            'runloop.run(main())\n';
+  if(bleBusy){ setStatus('⏳ Busy — let the current upload finish before sending again.'); return; }
   document.getElementById('code').textContent=py;
   setStatus('🔔 Sending beep over Bluetooth (fd02)…');
-  try{ await bleUploadProgram(py, BLE_SLOT, true);
+  try{ await bleUploadProgram(py, BLE_SLOT, true, p=>setStatus('🔔 Beep  '+bleBar(p)));
     const resp=await bleWaitConsole(/BT_BEEP_OK/, 4000);
     setStatus(/BT_BEEP_OK/.test(resp) ? '✓ Beep + heart sent over Bluetooth — you should have heard/seen it! Wireless upload works.'
       : (/Traceback|Error/.test(resp) ? ('BT beep ran with errors: '+resp.slice(-160)) : 'Sent over Bluetooth (slot '+BLE_SLOT+') — check the hub for the beep/heart.'));
@@ -642,8 +673,9 @@ async function uploadToHub(){
   document.getElementById('code').textContent=py;
   // Prefer Bluetooth if connected (native fd02) — otherwise USB via the server.
   if(bleTx){
+    if(bleBusy){ setStatus('⏳ Busy — let the current upload finish before sending again.'); return; }
     setStatus('Uploading over Bluetooth (fd02, slot '+BLE_SLOT+', no firmware flash)…');
-    try{ await bleUploadProgram(py, BLE_SLOT, true);
+    try{ await bleUploadProgram(py, BLE_SLOT, true, p=>setStatus('⬆ Uploading  '+bleBar(p)));
       const resp=await bleWaitConsole(/Traceback|Error/, 1200);
       setStatus(/Traceback|Error/.test(resp)? ('BT ran with errors: '+resp.slice(-180)) : '✓ Sent over Bluetooth (slot '+BLE_SLOT+') — program is running on the hub.');
     }catch(e){ setStatus('Bluetooth upload error: '+e.message); }
